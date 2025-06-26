@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circuit Editor - Enhanced Wireframe</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --sidebar-width: 280px;
+            --header-height: 60px;
+            --status-height: 32px;
+            --toolbar-height: 50px;
+            --grid-size: 20px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f1f5f9;
+            height: 100vh;
+            overflow: hidden;
+            color: #334155;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--dark) 0%, #0f172a 100%);
+            color: white;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: var(--header-height);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 20;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .project-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .project-name {
+            font-size: 16px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .project-name i {
+            color: var(--primary);
+        }
+
+        .collab-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .collab-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #94a3b8;
+            color: #e2e8f0;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Left Sidebar - Components Library */
+        .left-sidebar {
+            width: var(--sidebar-width);
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            box-shadow: 4px 0 6px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--secondary);
+            font-size: 16px;
+            display: none;
+        }
+
+        .circuit-type-tabs {
+            display: flex;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 16px;
+            background: #f8fafc;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--secondary);
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            position: relative;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .tab:hover:not(.active) {
+            color: var(--primary-dark);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .components-search {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            pointer-events: none;
+        }
+
+        .components-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .component-category {
+            margin-bottom: 24px;
+        }
+
+        .category-header {
+            font-weight: 600;
+            color: var(--dark);
+            padding: 8px 0;
+            font-size: 15px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-header i {
+            color: var(--primary);
+        }
+
+        .component-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        .component-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: grab;
+            transition: all 0.2s;
+            border: 1px solid #e2e8f0;
+            background: white;
+            text-align: center;
+        }
+
+        .component-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+            border-color: var(--primary);
+        }
+
+        .component-icon {
+            width: 48px;
+            height: 48px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .component-name {
+            font-size: 13px;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        /* Center Workspace */
+        .workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f8fafc;
+            position: relative;
+        }
+
+        .workspace-toolbar {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            height: var(--toolbar-height);
+            gap: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            z-index: 5;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-right: 16px;
+            border-right: 1px solid #e2e8f0;
+            height: 100%;
+        }
+
+        .toolbar-group:last-child {
+            border-right: none;
+        }
+
+        .tool-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 16px;
+            color: var(--secondary);
+            position: relative;
+        }
+
+        .tool-btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: var(--primary);
+        }
+
+        .tool-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary-dark);
+        }
+
+        .tool-btn .tooltip {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 100;
+        }
+
+        .tool-btn:hover .tooltip {
+            opacity: 1;
+        }
+
+        .zoom-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .zoom-level {
+            font-size: 14px;
+            color: var(--secondary);
+            min-width: 50px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #f8fafc;
+        }
+
+        .canvas {
+            width: 2000px;
+            height: 2000px;
+            background: white;
+            background-image: 
+                linear-gradient(rgba(203, 213, 225, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(203, 213, 225, 0.3) 1px, transparent 1px);
+            background-size: var(--grid-size) var(--grid-size);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            transform-origin: center center;
+            cursor: default;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .circuit-element {
+            position: absolute;
+            width: 80px;
+            height: 60px;
+            background: white;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--dark);
+            cursor: move;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            z-index: 2;
+            user-select: none;
+        }
+
+        .circuit-element .comp-value {
+            font-weight: 600;
+            margin-top: 4px;
+            color: var(--primary-dark);
+        }
+
+        .circuit-element.selected {
+            border-color: var(--warning);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
+            z-index: 3;
+        }
+
+        .connection-line {
+            position: absolute;
+            border-top: 2px solid var(--dark);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .connection-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--dark);
+            border-radius: 50%;
+            z-index: 2;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Sample circuit elements positioned on canvas */
+        .resistor-1 {
+            top: 200px;
+            left: 300px;
+        }
+
+        .capacitor-1 {
+            top: 300px;
+            left: 500px;
+        }
+
+        .voltage-source {
+            top: 250px;
+            left: 100px;
+        }
+
+        .connection-1 {
+            top: 230px;
+            left: 180px;
+            width: 120px;
+        }
+
+        .connection-2 {
+            top: 280px;
+            left: 100px;
+            width: 200px;
+        }
+
+        /* Right Sidebar - Properties */
+        .right-sidebar {
+            width: var(--sidebar-width);
+            background: white;
+            border-left: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            box-shadow: -4px 0 6px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+
+        .properties-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .panel-section {
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .section-header {
+            padding: 16px;
+            background: #f8fafc;
+            font-weight: 600;
+            color: var(--dark);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .section-header:hover {
+            background: #f1f5f9;
+        }
+
+        .section-content {
+            padding: 16px;
+            background: white;
+        }
+
+        .property-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .property-label {
+            width: 100px;
+            font-size: 14px;
+            color: var(--secondary);
+        }
+
+        .property-input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .property-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+
+        .simulation-results {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .result-label {
+            color: var(--secondary);
+        }
+
+        .result-value {
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .waveform-preview {
+            height: 120px;
+            background: #0f172a;
+            border-radius: 8px;
+            margin-top: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .waveform {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 80%;
+        }
+
+        .waveform path {
+            stroke: var(--primary);
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .symbol-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .symbol-item {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .symbol-item:hover {
+            border-color: var(--primary);
+            background: #f1f5f9;
+        }
+
+        .rotation-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .rotation-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .rotation-btn:hover {
+            background: #f1f5f9;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background: var(--dark);
+            color: #cbd5e1;
+            padding: 0 24px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: var(--status-height);
+        }
+
+        .status-left {
+            display: flex;
+            gap: 24px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .status-indicator.warning {
+            background: var(--warning);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            :root {
+                --sidebar-width: 240px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .left-sidebar, .right-sidebar {
+                position: absolute;
+                height: calc(100vh - var(--header-height) - var(--status-height));
+                top: var(--header-height);
+                z-index: 100;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            }
+            
+            .left-sidebar {
+                left: -100%;
+            }
+            
+            .left-sidebar.active {
+                left: 0;
+            }
+            
+            .right-sidebar {
+                right: -100%;
+            }
+            
+            .right-sidebar.active {
+                right: 0;
+            }
+            
+            .sidebar-toggle {
+                display: block;
+            }
+        }
+
+        /* Canvas grid toggle */
+        .canvas.no-grid {
+            background-image: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-section">
+                <div class="logo">
+                    <i class="fas fa-microchip"></i>
+                </div>
+                <div class="project-info">
+                    <div class="project-name">
+                        <i class="fas fa-project-diagram"></i>
+                        <span>Amplifier Circuit Design</span>
+                    </div>
+                    <div class="collab-indicator">
+                        <div class="collab-dot"></div>
+                        <span>2 users online</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <button class="btn btn-outline">
+                    <i class="fas fa-history"></i> Version History
+                </button>
+                <button class="btn btn-secondary">
+                    <i class="fas fa-save"></i> Save
+                </button>
+                <button class="btn btn-primary">
+                    <i class="fas fa-folder-open"></i> Load
+                </button>
+                <button class="btn btn-success">
+                    <i class="fas fa-play"></i> Simulate
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Sidebar - Components Library -->
+            <aside class="left-sidebar active">
+                <div class="sidebar-header">
+                    <span><i class="fas fa-box-open"></i> Components Library</span>
+                    <button class="sidebar-toggle">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="circuit-type-tabs">
+                    <button class="tab active">Analog</button>
+                    <button class="tab">Digital</button>
+                    <button class="tab">Mixed</button>
+                </div>
+                
+                <div class="components-search">
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" placeholder="Search components...">
+                    </div>
+                </div>
+                
+                <div class="components-list">
+                    <div class="component-category">
+                        <div class="category-header">
+                            <i class="fas fa-resistor"></i>
+                            <span>Passive Components</span>
+                        </div>
+                        <div class="component-items">
+                            <div class="component-item" draggable="true">
+                                <div class="component-icon">
+                                    <i class="fas fa-resistor"></i>
+                                </div>
+                                <span class="component-name">Resistor</span>
+                            </div>
+                            <div class="component-item" draggable="true">
+                                <div class="component-icon">
+                                    <i class="fas fa-bolt"></i>
+                                </div>
+                                <span class="component-name">Capacitor</span>
+                            </div>
+                            <div class="component-item" draggable="true">
+                                <div class="component-icon">
+                                    <i class="fas fa-circle-notch"></i>
+                                </div>
+                                <span class="component-name">Inductor</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="component-category">
+                        <div class="category-header">
+                            <i class="fas fa-battery-full"></i>
+                            <span>Sources</span>
+                        </div>
+                        <div class="component-items">
+                            <div class="component-item" draggable="true">
+                                <div class="component-icon">
+                                    <i class="fas fa-bolt"></i>
+                                </div>
+                                <span class="component-name">Voltage Source</span>
+                            </div>
+                            <div class="component-item" draggable="true">
+                                <div class="component-icon">
+                                    <i class="fas fa-stream"></i>
+                                </div>
+                                <span class="component-name">Current Source</span>
+                            </div>
+                            <div class="component-item" draggable="true">
+                                <div class="component-icon">
+                                    <i class="fas fa-wave-square"></i>
+                                </div>
+                                <span class="component-name">AC Source</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="component-category">
+                        <div class="category-header">
+                            <i class="fas fa-microchip"></i>
+                            <span>Semiconductors</span>
+                        </div>
+                        <div class="component-items">
+                            <div class="component-item" draggable="true">
+                                <div class="component-icon">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                                <span class="component-name">Diode</span>
+                            </div>
+                            <div class="component-item" draggable="true">
+                                <div class="component-icon">
+                                    <i class="fas fa-arrows-alt-h"></i>
+                                </div>
+                                <span class="component-name">Transistor</span>
+                            </div>
+                            <div class="component-item" draggable="true">
+                                <div class="component-icon">
+                                    <i class="fas fa-calculator"></i>
+                                </div>
+                                <span class="component-name">Op-Amp</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Center Workspace -->
+            <main class="workspace">
+                <div class="workspace-toolbar">
+                    <div class="toolbar-group">
+                        <button class="tool-btn active" title="Select">
+                            <i class="fas fa-mouse-pointer"></i>
+                            <span class="tooltip">Select (S)</span>
+                        </button>
+                        <button class="tool-btn" title="Wire">
+                            <i class="fas fa-plug"></i>
+                            <span class="tooltip">Wire (W)</span>
+                        </button>
+                        <button class="tool-btn" title="Move">
+                            <i class="fas fa-hand-paper"></i>
+                            <span class="tooltip">Move (M)</span>
+                        </button>
+                        <button class="tool-btn" title="Delete">
+                            <i class="fas fa-trash"></i>
+                            <span class="tooltip">Delete (Del)</span>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button class="tool-btn" title="Undo">
+                            <i class="fas fa-undo"></i>
+                            <span class="tooltip">Undo (Ctrl+Z)</span>
+                        </button>
+                        <button class="tool-btn" title="Redo">
+                            <i class="fas fa-redo"></i>
+                            <span class="tooltip">Redo (Ctrl+Y)</span>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group zoom-control">
+                        <button class="tool-btn" title="Zoom Out">
+                            <i class="fas fa-search-minus"></i>
+                            <span class="tooltip">Zoom Out (-)</span>
+                        </button>
+                        <span class="zoom-level">100%</span>
+                        <button class="tool-btn" title="Zoom In">
+                            <i class="fas fa-search-plus"></i>
+                            <span class="tooltip">Zoom In (+)</span>
+                        </button>
+                        <button class="tool-btn" title="Fit to Screen">
+                            <i class="fas fa-expand"></i>
+                            <span class="tooltip">Fit to Screen (F)</span>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button class="tool-btn active" title="Grid">
+                            <i class="fas fa-th"></i>
+                            <span class="tooltip">Toggle Grid (G)</span>
+                        </button>
+                        <button class="tool-btn" title="Snap">
+                            <i class="fas fa-magnet"></i>
+                            <span class="tooltip">Snap to Grid</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="canvas-container">
+                    <div class="canvas">
+                        <!-- Sample circuit elements -->
+                        <div class="circuit-element voltage-source">
+                            <i class="fas fa-bolt"></i>
+                            <div class="comp-value">5V DC</div>
+                        </div>
+                        <div class="circuit-element resistor-1 selected">
+                            <i class="fas fa-resistor"></i>
+                            <div class="comp-value">1kΩ ±5%</div>
+                        </div>
+                        <div class="circuit-element capacitor-1">
+                            <i class="fas fa-bolt"></i>
+                            <div class="comp-value">10µF</div>
+                        </div>
+                        
+                        <!-- Connection lines -->
+                        <div class="connection-line connection-1"></div>
+                        <div class="connection-line connection-2"></div>
+                        
+                        <!-- Connection dots -->
+                        <div class="connection-dot" style="top: 230px; left: 180px;"></div>
+                        <div class="connection-dot" style="top: 230px; left: 300px;"></div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Right Sidebar - Properties -->
+            <aside class="right-sidebar active">
+                <div class="sidebar-header">
+                    <span><i class="fas fa-sliders-h"></i> Properties</span>
+                    <button class="sidebar-toggle">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="properties-panel">
+                    <div class="panel-section">
+                        <div class="section-header">
+                            <span><i class="fas fa-cog"></i> Component Properties</span>
+                            <span>▼</span>
+                        </div>
+                        <div class="section-content">
+                            <div class="property-row">
+                                <label class="property-label">Name:</label>
+                                <input type="text" class="property-input" value="R1">
+                            </div>
+                            <div class="property-row">
+                                <label class="property-label">Value:</label>
+                                <input type="text" class="property-input" value="1000">
+                            </div>
+                            <div class="property-row">
+                                <label class="property-label">Unit:</label>
+                                <select class="property-input">
+                                    <option>Ω (Ohms)</option>
+                                    <option selected>kΩ</option>
+                                    <option>MΩ</option>
+                                </select>
+                            </div>
+                            <div class="property-row">
+                                <label class="property-label">Tolerance:</label>
+                                <input type="text" class="property-input" value="5%">
+                            </div>
+                            
+                            <div class="rotation-controls">
+                                <button class="rotation-btn" title="Rotate Left">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                                <button class="rotation-btn" title="Rotate Right">
+                                    <i class="fas fa-redo"></i>
+                                </button>
+                                <span style="flex: 1; text-align: center; line-height: 36px;">
+                                    0°
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-section">
+                        <div class="section-header">
+                            <span><i class="fas fa-chart-line"></i> Simulation Results</span>
+                            <span>▼</span>
+                        </div>
+                        <div class="section-content">
+                            <div class="simulation-results">
+                                <div class="result-item">
+                                    <span class="result-label">Voltage:</span>
+                                    <span class="result-value">3.33V</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">Current:</span>
+                                    <span class="result-value">3.33mA</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">Power:</span>
+                                    <span class="result-value">11.09mW</span>
+                                </div>
+                                <div class="result-item">
+                                    <span class="result-label">Temperature:</span>
+                                    <span class="result-value">25°C</span>
+                                </div>
+                            </div>
+                            
+                            <div class="waveform-preview">
+                                <svg class="waveform" viewBox="0 0 500 100" preserveAspectRatio="none">
+                                    <path d="M0,50 C100,10 150,90 250,50 C350,10 400,90 500,50" stroke="#3b82f6"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-section">
+                        <div class="section-header">
+                            <span><i class="fas fa-shapes"></i> Symbol Library</span>
+                            <span>▼</span>
+                        </div>
+                        <div class="section-content">
+                            <div class="symbol-grid">
+                                <div class="symbol-item"><i class="fas fa-resistor"></i></div>
+                                <div class="symbol-item"><i class="fas fa-bolt"></i></div>
+                                <div class="symbol-item"><i class="fas fa-circle-notch"></i></div>
+                                <div class="symbol-item"><i class="fas fa-arrow-right"></i></div>
+                                <div class="symbol-item"><i class="fas fa-arrows-alt-h"></i></div>
+                                <div class="symbol-item"><i class="fas fa-calculator"></i></div>
+                                <div class="symbol-item"><i class="fas fa-battery-full"></i></div>
+                                <div class="symbol-item"><i class="fas fa-wave-square"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- Status Bar -->
+        <footer class="status-bar">
+            <div class="status-left">
+                <div class="status-item">
+                    <div class="status-indicator"></div>
+                    <span>Connected</span>
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-cube"></i>
+                    <span>Components: 3</span>
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-code-branch"></i>
+                    <span>Nodes: 4</span>
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-bolt"></i>
+                    <span>Simulation: Ready</span>
+                </div>
+            </div>
+            <div class="status-right">
+                <span><i class="fas fa-save"></i> Last saved: 2 minutes ago</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching functionality
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Tool button interactions
+            const toolBtns = document.querySelectorAll('.tool-btn');
+            toolBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (this.parentElement.classList.contains('toolbar-group')) {
+                        const siblings = this.parentElement.querySelectorAll('.tool-btn');
+                        siblings.forEach(s => s.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                    
+                    // Handle grid toggle
+                    if (this.querySelector('.fa-th')) {
+                        const canvas = document.querySelector('.canvas');
+                        canvas.classList.toggle('no-grid');
+                    }
+                });
+            });
+            
+            // Component selection
+            const circuitElements = document.querySelectorAll('.circuit-element');
+            circuitElements.forEach(element => {
+                element.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    circuitElements.forEach(e => e.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+            
+            // Canvas click to deselect
+            document.querySelector('.canvas').addEventListener('click', function() {
+                circuitElements.forEach(e => e.classList.remove('selected'));
+            });
+            
+            // Zoom controls
+            let zoomLevel = 100;
+            const zoomDisplay = document.querySelector('.zoom-level');
+            const canvas = document.querySelector('.canvas');
+            
+            document.querySelectorAll('.tool-btn').forEach(btn => {
+                if (btn.querySelector('.fa-search-plus')) {
+                    btn.addEventListener('click', () => {
+                        zoomLevel = Math.min(zoomLevel + 25, 400);
+                        zoomDisplay.textContent = zoomLevel + '%';
+                        updateCanvasZoom();
+                    });
+                } else if (btn.querySelector('.fa-search-minus')) {
+                    btn.addEventListener('click', () => {
+                        zoomLevel = Math.max(zoomLevel - 25, 25);
+                        zoomDisplay.textContent = zoomLevel + '%';
+                        updateCanvasZoom();
+                    });
+                } else if (btn.querySelector('.fa-expand')) {
+                    btn.addEventListener('click', () => {
+                        zoomLevel = 100;
+                        zoomDisplay.textContent = zoomLevel + '%';
+                        updateCanvasZoom();
+                    });
+                }
+            });
+            
+            function updateCanvasZoom() {
+                const scale = zoomLevel / 100;
+                canvas.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            }
+            
+            // Sidebar toggle for mobile
+            const sidebarToggles = document.querySelectorAll('.sidebar-toggle');
+            sidebarToggles.forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const sidebar = this.closest('.left-sidebar, .right-sidebar');
+                    sidebar.classList.toggle('active');
+                });
+            });
+            
+            // Component drag and drop
+            const componentItems = document.querySelectorAll('.component-item');
+            componentItems.forEach(item => {
+                item.addEventListener('dragstart', function(e) {
+                    const compName = this.querySelector('.component-name').textContent;
+                    e.dataTransfer.setData('text/plain', compName);
+                });
+            });
+            
+            // Canvas drop area
+            const canvasContainer = document.querySelector('.canvas-container');
+            canvasContainer.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.backgroundColor = 'rgba(37, 99, 235, 0.05)';
+            });
+            
+            canvasContainer.addEventListener('dragleave', function(e) {
+                this.style.backgroundColor = '';
+            });
+            
+            canvasContainer.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.backgroundColor = '';
+                
+                const componentType = e.dataTransfer.getData('text/plain');
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // Create new component element
+                const newElement = document.createElement('div');
+                newElement.className = 'circuit-element';
+                newElement.style.left = (x - 40) + 'px';
+                newElement.style.top = (y - 30) + 'px';
+                
+                // Set icon based on component type
+                let iconClass = 'fas fa-question';
+                if (componentType.includes('Resistor')) iconClass = 'fas fa-resistor';
+                if (componentType.includes('Capacitor')) iconClass = 'fas fa-bolt';
+                if (componentType.includes('Source')) iconClass = 'fas fa-battery-full';
+                
+                newElement.innerHTML = `
+                    <i class="${iconClass}"></i>
+                    <div class="comp-value">${componentType}</div>
+                `;
+                
+                newElement.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    circuitElements.forEach(e => e.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+                
+                document.querySelector('.canvas').appendChild(newElement);
+            });
+            
+            // Simulate a waveform
+            const waveform = document.querySelector('.waveform path');
+            if (waveform) {
+                animateWaveform();
+            }
+            
+            function animateWaveform() {
+                const amplitude = Math.random() * 30 + 20;
+                const frequency = Math.random() * 0.5 + 0.5;
+                const offset = Math.random() * 30 + 35;
+                
+                const d = `M0,${offset} 
+                    C${100},${offset - amplitude} 
+                    ${150},${offset + amplitude} 
+                    ${250},${offset} 
+                    C${350},${offset - amplitude} 
+                    ${400},${offset + amplitude} 
+                    ${500},${offset}`;
+                
+                waveform.setAttribute('d', d);
+                
+                setTimeout(animateWaveform, 2000);
+            }
+        });
+    </script>
+</body>
+</html>
