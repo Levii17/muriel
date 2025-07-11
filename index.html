@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CircuitCraft - Electrical Schematics Editor</title>
+    <title>Muriel - Electrical Schematics Editor</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -241,38 +241,6 @@
             display: none;
         }
 
-        .circuit-type-tabs {
-            display: flex;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 0 16px;
-            background: #f8fafc;
-        }
-
-        .tab {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            border: none;
-            background: transparent;
-            color: var(--secondary);
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
-            position: relative;
-            border-bottom: 2px solid transparent;
-        }
-
-        .tab.active {
-            color: var(--primary);
-            border-bottom: 2px solid var(--primary);
-        }
-
-        .tab:hover:not(.active) {
-            color: var(--primary-dark);
-            background: rgba(37, 99, 235, 0.05);
-        }
-
         .components-search {
             padding: 16px;
             border-bottom: 1px solid #e2e8f0;
@@ -498,83 +466,6 @@
             box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.03);
         }
 
-        .circuit-element {
-            position: absolute;
-            width: 80px;
-            height: 60px;
-            background: white;
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: var(--dark);
-            cursor: move;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            transition: all 0.2s;
-            z-index: 2;
-            user-select: none;
-        }
-
-        .circuit-element .comp-value {
-            font-weight: 600;
-            margin-top: 4px;
-            color: var(--primary-dark);
-        }
-
-        .circuit-element.selected {
-            border-color: var(--warning);
-            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
-            z-index: 3;
-        }
-
-        .connection-line {
-            position: absolute;
-            border-top: 2px solid var(--dark);
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .connection-dot {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background: var(--dark);
-            border-radius: 50%;
-            z-index: 2;
-            transform: translate(-50%, -50%);
-        }
-
-        /* Sample circuit elements positioned on canvas */
-        .resistor-1 {
-            top: 200px;
-            left: 300px;
-        }
-
-        .capacitor-1 {
-            top: 300px;
-            left: 500px;
-        }
-
-        .voltage-source {
-            top: 250px;
-            left: 100px;
-        }
-
-        .connection-1 {
-            top: 230px;
-            left: 180px;
-            width: 120px;
-        }
-
-        .connection-2 {
-            top: 280px;
-            left: 100px;
-            width: 200px;
-        }
-
         /* Right Sidebar - Properties */
         .right-sidebar {
             width: var(--sidebar-width);
@@ -638,6 +529,7 @@
             border-radius: 8px;
             font-size: 14px;
             transition: all 0.2s;
+            width: 50px;
         }
 
         .property-input:focus {
@@ -830,6 +722,116 @@
             }
         }
 
+        /* EGD BORDER */
+        .egd-border {
+            position: absolute;
+            top: 20px;
+            left: 9px;
+            right: 20px;
+            bottom: 20px;
+            width: 955px;
+            border: 4px solid black;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .egd-title-block {
+            position: absolute;
+            bottom: 29px;
+            right: 20px;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            border: 2px solid #333;
+            font-size: 12px;
+            font-family: 'Segoe UI', sans-serif;
+            background: white;
+            z-index: 2;
+        }
+
+        .title-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .logo-cell {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #2c5aa0 0%, #1e3a8a 100%);
+            color: white;
+            text-align: center;
+            vertical-align: middle;
+            position: relative;
+            padding: 0;
+        }
+        
+        .logo-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .logo-text {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+        
+        .logo-symbol {
+            font-size: 20px;
+            font-weight: normal;
+        }
+        
+        .info-cell {
+            border: 1px solid #333;
+            padding: 8px 12px;
+            text-align: left;
+            vertical-align: middle;
+            font-weight: normal;
+            color: #333;
+        }
+        
+        .info-cell.large {
+            height: 60px;
+            vertical-align: middle;
+        }
+        
+        .right-cell {
+            text-align: right;
+            width: 100px;
+        }
+        
+        .date-cell {
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        .scale-cell {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .page-cell {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        /* Border styling */
+        .info-cell {
+            border-right: 1px solid #333;
+            border-bottom: 1px solid #333;
+        }
+        
+        .info-cell:last-child {
+            border-right: none;
+        }
+        
+        .logo-cell {
+            border-right: 1px solid #333;
+            border-bottom: 1px solid #333;
+        }
+
+
         @media (max-width: 768px) {
             .header-actions .btn span {
                 display: none;
@@ -856,17 +858,13 @@
                     <div class="logo">
                         <i class="fas fa-microchip"></i>
                     </div>
-                    <span class="app-name">CircuitCraft</span>
+                    <span class="app-name">Muriel</span>
                 </div>
                 
                 <div class="project-info">
                     <div class="project-name">
                         <i class="fas fa-project-diagram"></i>
                         <span>Amplifier Circuit Design</span>
-                    </div>
-                    <!-- Removed "2 users online" text -->
-                    <div class="collab-indicator">
-                        <div class="collab-dot"></div>
                     </div>
                 </div>
             </div>
@@ -896,12 +894,6 @@
                     <button class="sidebar-toggle">
                         <i class="fas fa-times"></i>
                     </button>
-                </div>
-                
-                <div class="circuit-type-tabs">
-                    <button class="tab active">Analog</button>
-                    <button class="tab">Digital</button>
-                    <button class="tab">Mixed</button>
                 </div>
                 
                 <div class="components-search">
@@ -1057,29 +1049,32 @@
                 </div>
                 
                 <div class="canvas-container">
-                    <div class="canvas">
-                        <!-- Sample circuit elements -->
-                        <div class="circuit-element voltage-source">
-                            <i class="fas fa-bolt"></i>
-                            <div class="comp-value">5V DC</div>
-                        </div>
-                        <div class="circuit-element resistor-1 selected">
-                            <i class="fas fa-resistor"></i>
-                            <div class="comp-value">1kΩ ±5%</div>
-                        </div>
-                        <div class="circuit-element capacitor-1">
-                            <i class="fas fa-bolt"></i>
-                            <div class="comp-value">10µF</div>
-                        </div>
-                        
-                        <!-- Connection lines -->
-                        <div class="connection-line connection-1"></div>
-                        <div class="connection-line connection-2"></div>
-                        
-                        <!-- Connection dots -->
-                        <div class="connection-dot" style="top: 230px; left: 180px;"></div>
-                        <div class="connection-dot" style="top: 230px; left: 300px;"></div>
+                    <div class="egd-border"></div>
+                    <div class="egd-title-block">
+                        <table class="title-table">
+                            <tr>
+                                <td class="logo-cell" rowspan="3">
+                                    <div class="logo-content">
+                                        <div class="logo-text">MURIEL</div>
+                                        <div class="logo-symbol">※</div>
+                                    </div>
+                                </td>
+                                <td class="info-cell">Organization</td>
+                                <td class="info-cell">Project Name</td>
+                                <td class="info-cell right-cell date-cell">11/07/2025</td>
+                            </tr>
+                            <tr>
+                                <td class="info-cell">Name</td>
+                                <td class="info-cell large" rowspan="2">Drawing Title(s)</td>
+                                <td class="info-cell right-cell scale-cell">1:1</td>
+                            </tr>
+                            <tr>
+                                <td class="info-cell">Details</td>
+                                <td class="info-cell right-cell page-cell">1 / 1</td>
+                            </tr>
+                        </table>
                     </div>
+                    <div class="canvas"></div>
                 </div>
             </main>
 
@@ -1102,6 +1097,10 @@
                             <div class="property-row">
                                 <label class="property-label">Name:</label>
                                 <input type="text" class="property-input" value="R1">
+                            </div>
+                            <div class="property-row">
+                                <label class="property-label">Color:</label>
+                                <input type="text" class="property-input" value="Black">
                             </div>
                             <div class="property-row">
                                 <label class="property-label">Value:</label>
@@ -1169,19 +1168,25 @@
                     
                     <div class="panel-section">
                         <div class="section-header">
-                            <span><i class="fas fa-shapes"></i> Symbol Library</span>
+                            <span><i class="fas fa-shapes"></i> Title Block</span>
                             <span>▼</span>
                         </div>
                         <div class="section-content">
-                            <div class="symbol-grid">
-                                <div class="symbol-item"><i class="fas fa-resistor"></i></div>
-                                <div class="symbol-item"><i class="fas fa-bolt"></i></div>
-                                <div class="symbol-item"><i class="fas fa-circle-notch"></i></div>
-                                <div class="symbol-item"><i class="fas fa-arrow-right"></i></div>
-                                <div class="symbol-item"><i class="fas fa-arrows-alt-h"></i></div>
-                                <div class="symbol-item"><i class="fas fa-calculator"></i></div>
-                                <div class="symbol-item"><i class="fas fa-battery-full"></i></div>
-                                <div class="symbol-item"><i class="fas fa-wave-square"></i></div>
+                            <div class="property-row">
+                                <label class="property-label">Name:</label>
+                                <input type="text" class="property-input" value="Mxolisi">
+                            </div>
+                            <div class="property-row">
+                                <label class="property-label">Date:</label>
+                                <input type="text" class="property-input" value="7/11/2025">
+                            </div>
+                            <div class="property-row">
+                                <label class="property-label">Tile:</label>
+                                <input type="text" class="property-input" value="Amplifier Circuit Design">
+                            </div>
+                            <div class="property-row">
+                                <label class="property-label">Scale:</label>
+                                <input type="text" class="property-input" value="1:1">
                             </div>
                         </div>
                     </div>
@@ -1217,14 +1222,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Tab switching functionality
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    tabs.forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
             
             // Tool button interactions
             const toolBtns = document.querySelectorAll('.tool-btn');
