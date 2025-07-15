@@ -1,0 +1,19 @@
+# Project Structure Guide
+
+This project must follow a strict directory structure for maintainability and clarity. The main directories are:
+
+- `src/components/` – React components only
+- `src/hooks/` – Custom React hooks
+- `src/stores/` – Jotai atoms (state management)
+- `src/types/` – TypeScript type definitions
+- `src/data/` – Static data (symbols, etc.)
+- `src/utils/` – Pure utility functions
+- `src/lib/` – Third-party configurations
+
+**References:**
+- See `.cursorrules` for full structure and enforcement
+- All new files must be placed in the correct directory according to their purpose
+description:
+globs:
+alwaysApply: false
+---
