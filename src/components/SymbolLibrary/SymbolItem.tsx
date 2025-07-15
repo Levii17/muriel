@@ -1,19 +1,27 @@
 import React from 'react';
 import type { ElectricalSymbol } from '../../types';
+import { useSetAtom } from 'jotai';
+import { draggedSymbolAtom } from '../../stores/symbolStore';
 
 interface SymbolItemProps {
   symbol: ElectricalSymbol;
 }
 
 const SymbolItem: React.FC<SymbolItemProps> = ({ symbol }) => {
+  const setDraggedSymbol = useSetAtom(draggedSymbolAtom);
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData('application/json', JSON.stringify(symbol));
+    setDraggedSymbol(symbol);
+  };
+  const handleDragEnd = () => {
+    setDraggedSymbol(null);
   };
 
   return (
     <div
       draggable
       onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
       style={{
         display: 'flex',
         alignItems: 'center',

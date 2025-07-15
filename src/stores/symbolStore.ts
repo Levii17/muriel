@@ -15,3 +15,6 @@ export const filteredSymbolsAtom = atom(
     );
   }
 );
+
+// Atom to track the currently dragged symbol (for drag feedback/ghost preview)
+export const draggedSymbolAtom = atom<ElectricalSymbol | null>(null);

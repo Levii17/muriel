@@ -18,8 +18,6 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import BrushIcon from '@mui/icons-material/Brush';
 import Chip from '@mui/material/Chip';
-import { useAtom } from 'jotai';
-import { selectedToolAtom } from '../../stores/appStore';
 
 export type CanvasTool = 'select' | 'hand';
 
@@ -38,8 +36,8 @@ interface MainToolbarProps {
 }
 
 const MainToolbar: React.FC<MainToolbarProps> = ({
-  selectedTool: _selectedTool,
-  onSelectTool: _onSelectTool,
+  selectedTool,
+  onSelectTool,
   onUndo,
   onRedo,
   onDelete,
@@ -50,8 +48,6 @@ const MainToolbar: React.FC<MainToolbarProps> = ({
   minZoom,
   maxZoom,
 }) => {
-  const [selectedTool, setSelectedTool] = useAtom(selectedToolAtom);
-  const onSelectTool = setSelectedTool;
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', bgcolor: '#fff', px: 1, py: 0.5, boxShadow: 1 }}>
       {/* Tool group 1 */}

@@ -6,11 +6,11 @@ import { TextField, Box, Typography } from '@mui/material';
 const fields = [
   { name: 'company', label: 'Organization' },
   { name: 'project', label: 'Project Name' },
-  { name: 'designer', label: 'Name/Designer' },
-  { name: 'ecsaNumber', label: 'ECSA Number' },
+  { name: 'designer', label: 'Name' },
   { name: 'date', label: 'Date' },
   { name: 'scale', label: 'Scale' },
-  { name: 'revision', label: 'Revision' },
+  { name: 'drawingTitle', label: 'Drawing Title(s)' },
+  { name: 'details', label: 'Details' },
 ];
 
 const TitleBlockPanel: React.FC = () => {

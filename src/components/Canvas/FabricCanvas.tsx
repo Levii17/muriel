@@ -4,6 +4,8 @@ import { canvasElementsAtom } from '../../stores/canvasStore';
 import { symbolLibraryAtom } from '../../stores/symbolStore';
 import { canvasViewportAtom } from '../../stores/canvasStore';
 import { selectedElementsAtom } from '../../stores/canvasStore';
+import { draggedSymbolAtom } from '../../stores/symbolStore';
+import { titleBlockAtom } from '../../stores/titleBlockStore';
 import type { ElectricalSymbol, CanvasElement } from '../../types';
 
 // Remove fixed canvas size; will use parent container size
@@ -20,15 +22,15 @@ const FabricCanvas: React.FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const fabricRef = useRef<any>(null);
-  const fabricModuleRef = useRef<any>(null); // <-- store fabric module
   const [elements, setElements] = useAtom(canvasElementsAtom);
   const [symbolLibrary] = useAtom(symbolLibraryAtom);
   const [viewport, setViewport] = useAtom(canvasViewportAtom);
   const [containerSize, setContainerSize] = React.useState({ width: 0, height: 0 });
   // Selection state
   const [selected, setSelected] = useAtom(selectedElementsAtom);
-  const [draggedSymbol, setDraggedSymbol] = React.useState<ElectricalSymbol | null>(null);
-  const [dragPos, setDragPos] = React.useState<{ x: number; y: number } | null>(null);
+  const [draggedSymbol, setDraggedSymbol] = useAtom(draggedSymbolAtom);
+  const [ghostPos, setGhostPos] = React.useState<{ x: number; y: number } | null>(null);
+  const [titleBlock] = useAtom(titleBlockAtom);
 
   // Helper to find Fabric object by element id
   const symbolObjectMap = React.useRef<Record<string, any>>({});
@@ -156,25 +158,17 @@ const FabricCanvas: React.FC = () => {
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    // Show ghost preview
-    const data = e.dataTransfer.getData('application/json');
-    if (data) {
-      const symbol: ElectricalSymbol = JSON.parse(data);
-      setDraggedSymbol(symbol);
+    if (draggedSymbol) {
       const pos = getPointerPosition(e);
-      setDragPos(pos);
+      const snapped = snapToGrid(pos.x, pos.y);
+      setGhostPos(snapped);
     }
-  };
-
-  const handleDragLeave = () => {
-    setDraggedSymbol(null);
-    setDragPos(null);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    setGhostPos(null);
     setDraggedSymbol(null);
-    setDragPos(null);
     const data = e.dataTransfer.getData('application/json');
     if (data) {
       const symbol: ElectricalSymbol = JSON.parse(data);
@@ -192,6 +186,10 @@ const FabricCanvas: React.FC = () => {
         } as CanvasElement,
       ]);
     }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    setGhostPos(null);
   };
 
   // Pan and zoom handlers
@@ -221,17 +219,20 @@ const FabricCanvas: React.FC = () => {
     lastPointer.current = null;
   };
 
-  // Only re-create Fabric.js instance if container size changes
   useEffect(() => {
+    let fabricInstance: any;
+    // Store references to symbol objects for cleanup
+    let symbolObjects: any[] = [];
+
     import('fabric').then((mod) => {
       const fabric = mod;
-      fabricModuleRef.current = fabric; // <-- store module
+      // Dispose previous instance if exists
       if (fabricRef.current) {
         fabricRef.current.dispose();
         fabricRef.current = null;
       }
       if (canvasRef.current && fabric && fabric.Canvas) {
-        const fabricInstance = new fabric.Canvas(canvasRef.current, {
+        fabricInstance = new fabric.Canvas(canvasRef.current, {
           width: containerSize.width,
           height: containerSize.height,
           backgroundColor: '#fff',
@@ -239,107 +240,248 @@ const FabricCanvas: React.FC = () => {
           preserveObjectStacking: true,
         });
         fabricRef.current = fabricInstance;
-      }
-    });
-    return () => {
-      if (fabricRef.current) {
-        fabricRef.current.dispose();
-        fabricRef.current = null;
-      }
-    };
-  }, [containerSize.width, containerSize.height]);
 
-  // Redraw grid and elements on relevant changes
-  useEffect(() => {
-    const fabricInstance = fabricRef.current;
-    const fabric = fabricModuleRef.current;
-    if (!fabricInstance || !fabric) return;
-    // Clear canvas (but not the instance)
-    fabricInstance.clear();
-    // Set background and viewport
-    fabricInstance.backgroundColor = '#fff';
-    fabricInstance.renderAll();
-    fabricInstance.setViewportTransform([
-      viewport.zoom, 0, 0, viewport.zoom, viewport.pan.x, viewport.pan.y
-    ]);
-    // Draw grid
-    for (let x = 0; x <= containerSize.width; x += GRID_SIZE) {
-      const isMajor = x % MAJOR_GRID_SIZE === 0;
-      const line = new fabric.Line([x, 0, x, containerSize.height], {
-        stroke: isMajor ? '#bdbdbd' : '#e0e0e0',
-        strokeWidth: isMajor ? 1.2 : 0.7,
-        selectable: false,
-        evented: false,
-        excludeFromExport: true,
-      });
-      fabricInstance.add(line);
-    }
-    for (let y = 0; y <= containerSize.height; y += GRID_SIZE) {
-      const isMajor = y % MAJOR_GRID_SIZE === 0;
-      const line = new fabric.Line([0, y, containerSize.width, y], {
-        stroke: isMajor ? '#bdbdbd' : '#e0e0e0',
-        strokeWidth: isMajor ? 1.2 : 0.7,
-        selectable: false,
-        evented: false,
-        excludeFromExport: true,
-      });
-      fabricInstance.add(line);
-    }
-    // Add all elements (symbols)
-    const addSymbols = async () => {
-      for (const el of elements) {
-        const symbol = symbolLibrary.find(s => s.id === el.symbolId);
-        if (!symbol || !fabric || !symbol.svg) {
-          console.warn('Skipping symbol:', el.symbolId, 'fabric module or SVG missing');
-          continue;
-        }
-        try {
-          await new Promise<void>((resolve) => {
-            fabric.loadSVGFromString(symbol.svg, (objects: any[], options: any) => {
-              try {
-                if (!Array.isArray(objects) || typeof options !== 'object' || !objects.length) {
-                  console.error('Malformed SVG or Fabric.js parse error:', { symbolId: el.symbolId, svg: symbol.svg, objects, options });
-                  resolve();
-                  return;
-                }
-                const group = fabric.util.groupSVGElements(objects, options);
-                group.set({
-                  left: el.position.x,
-                  top: el.position.y,
-                  angle: el.rotation || 0,
-                  selectable: true,
-                  data: { id: el.id },
-                  hasControls: true,
-                  hasBorders: true,
-                  hoverCursor: 'pointer',
-                });
-                fabricInstance.add(group);
-              } catch (err) {
-                console.error('Error adding symbol to canvas:', err, { symbolId: el.symbolId, svg: symbol.svg });
-              }
-              resolve();
-            });
+        // Apply pan/zoom from viewport atom
+        fabricInstance.setViewportTransform([
+          viewport.zoom, 0, 0, viewport.zoom, viewport.pan.x, viewport.pan.y
+        ]);
+
+        // Draw grid (pixel-perfect: offset by 0.5px)
+        // Always cover the entire canvas area, edge to edge
+        for (let x = 0; x <= containerSize.width; x += GRID_SIZE) {
+          const isMajor = x % MAJOR_GRID_SIZE === 0;
+          const px = Math.round(x) + 0.5;
+          const line = new fabric.Line([px, 0, px, containerSize.height], {
+            stroke: isMajor ? '#bdbdbd' : '#e0e0e0',
+            strokeWidth: isMajor ? 1.2 : 0.7,
+            selectable: false,
+            evented: false,
+            excludeFromExport: true,
           });
-        } catch (err) {
-          console.error('Error loading SVG for symbol:', el.symbolId, err);
+          fabricInstance.add(line);
         }
-      }
-      fabricInstance.renderAll();
-    };
-    addSymbols();
-  }, [elements, symbolLibrary, viewport, containerSize.width, containerSize.height]);
+        for (let y = 0; y <= containerSize.height; y += GRID_SIZE) {
+          const isMajor = y % MAJOR_GRID_SIZE === 0;
+          const py = Math.round(y) + 0.5;
+          const line = new fabric.Line([0, py, containerSize.width, py], {
+            stroke: isMajor ? '#bdbdbd' : '#e0e0e0',
+            strokeWidth: isMajor ? 1.2 : 0.7,
+            selectable: false,
+            evented: false,
+            excludeFromExport: true,
+          });
+          fabricInstance.add(line);
+        }
 
-  // Only update viewport transform on zoom/pan
-  useEffect(() => {
-    if (fabricRef.current) {
-      fabricRef.current.setViewportTransform([
-        viewport.zoom, 0, 0, viewport.zoom, viewport.pan.x, viewport.pan.y
-      ]);
-      // Always ensure background is white
-      fabricRef.current.backgroundColor = '#fff';
-      fabricRef.current.renderAll();
-    }
-  }, [viewport]);
+        // Conditionally draw border and title block
+        // Drawing border (outer and inner rectangles)
+        const outerRect = new fabric.Rect({
+          left: 0,
+          top: 0,
+          width: containerSize.width,
+          height: containerSize.height,
+          stroke: '#000',
+          strokeWidth: 2,
+          fill: '',
+          selectable: false,
+          evented: false,
+          excludeFromExport: true,
+        });
+        fabricInstance.add(outerRect);
+
+        // Title block (bottom right)
+        const TITLE_BLOCK_WIDTH = 400;
+        const TITLE_BLOCK_HEIGHT = 100;
+        const ROWS = 3;
+        const COLS = 4;
+        const COL_WIDTHS = [60, 120, 140, 80]; // logo, left, center, right
+        const ROW_HEIGHT = TITLE_BLOCK_HEIGHT / ROWS;
+        const COL_X = COL_WIDTHS.reduce((acc, w, i) => {
+          acc.push((acc[i - 1] || 0) + (COL_WIDTHS[i - 1] || 0));
+          return acc;
+        }, [] as number[]);
+        // Change title block position to be flush with the outer border
+        const x = containerSize.width - TITLE_BLOCK_WIDTH;
+        const y = containerSize.height - TITLE_BLOCK_HEIGHT;
+        // Outer border
+        fabricInstance.add(new fabric.Rect({
+          left: x,
+          top: y,
+          width: TITLE_BLOCK_WIDTH,
+          height: TITLE_BLOCK_HEIGHT,
+          stroke: '#000',
+          strokeWidth: 1.2,
+          fill: '#fff',
+          selectable: false,
+          evented: false,
+        }));
+        // Draw cell borders (vertical)
+        COL_X.slice(1).forEach((cx) => {
+          fabricInstance.add(new fabric.Line([x + cx, y, x + cx, y + TITLE_BLOCK_HEIGHT], {
+            stroke: '#000', strokeWidth: 1, selectable: false, evented: false,
+          }));
+        });
+        // Draw cell borders (horizontal) - skip logo cell and merge center column for Drawing Title(s)
+        for (let r = 1; r < ROWS; r++) {
+          // Only draw horizontal lines for left and right columns
+          // For center column, skip the line between row 2 and 3
+          if (r === 2) {
+            // Left of center column
+            fabricInstance.add(new fabric.Line([
+              x + COL_WIDTHS[0],
+              y + r * ROW_HEIGHT,
+              x + COL_X[2],
+              y + r * ROW_HEIGHT
+            ], {
+              stroke: '#000', strokeWidth: 1, selectable: false, evented: false,
+            }));
+            // Right of center column
+            fabricInstance.add(new fabric.Line([
+              x + COL_X[2] + COL_WIDTHS[2],
+              y + r * ROW_HEIGHT,
+              x + TITLE_BLOCK_WIDTH,
+              y + r * ROW_HEIGHT
+            ], {
+              stroke: '#000', strokeWidth: 1, selectable: false, evented: false,
+            }));
+          } else {
+            // Full line for other rows
+            fabricInstance.add(new fabric.Line([
+              x + COL_WIDTHS[0],
+              y + r * ROW_HEIGHT,
+              x + TITLE_BLOCK_WIDTH,
+              y + r * ROW_HEIGHT
+            ], {
+              stroke: '#000', strokeWidth: 1, selectable: false, evented: false,
+            }));
+          }
+        }
+        // --- TEXT FIELDS ---
+        // Top row
+        fabricInstance.add(new fabric.Text('Organization', {
+          left: x + COL_X[1] + 8,
+          top: y + 8,
+          fontSize: 13,
+          fontWeight: 'bold',
+          fill: '#222',
+          selectable: false,
+          evented: false,
+        }));
+        fabricInstance.add(new fabric.Text('Project Name', {
+          left: x + COL_X[2] + 8,
+          top: y + 8,
+          fontSize: 13,
+          fontWeight: 'bold',
+          fill: '#222',
+          selectable: false,
+          evented: false,
+        }));
+        fabricInstance.add(new fabric.Text(titleBlock.date || '7/15/2025', {
+          left: x + COL_X[3] + COL_WIDTHS[3] - 8,
+          top: y + 8,
+          fontSize: 13,
+          fontWeight: 'bold',
+          fill: '#222',
+          selectable: false,
+          evented: false,
+          originX: 'right',
+        }));
+        // Second and third row: Drawing Title(s) merged cell (centered vertically and horizontally)
+        fabricInstance.add(new fabric.Text('Drawing Title(s)', {
+          left: x + COL_X[2] + COL_WIDTHS[2] / 2,
+          top: y + ROW_HEIGHT + ROW_HEIGHT / 2 - 18,
+          fontSize: 13,
+          fontWeight: 'bold',
+          fill: '#222',
+          selectable: false,
+          evented: false,
+          originX: 'center',
+          originY: 'center',
+        }));
+        fabricInstance.add(new fabric.Text(titleBlock.drawingTitle || '', {
+          left: x + COL_X[2] + COL_WIDTHS[2] / 2,
+          top: y + ROW_HEIGHT + ROW_HEIGHT / 2 + 10,
+          fontSize: 13,
+          fill: '#1976d2',
+          selectable: false,
+          evented: false,
+          originX: 'center',
+          originY: 'center',
+        }));
+        // Second row (left and right)
+        fabricInstance.add(new fabric.Text('Name', {
+          left: x + COL_X[1] + 8,
+          top: y + ROW_HEIGHT + 8,
+          fontSize: 13,
+          fontWeight: 'bold',
+          fill: '#222',
+          selectable: false,
+          evented: false,
+        }));
+        fabricInstance.add(new fabric.Text('1:1', {
+          left: x + COL_X[3] + COL_WIDTHS[3] - 8,
+          top: y + ROW_HEIGHT + 8,
+          fontSize: 13,
+          fontWeight: 'bold',
+          fill: '#222',
+          selectable: false,
+          evented: false,
+          originX: 'right',
+        }));
+        // Third row (left and right)
+        fabricInstance.add(new fabric.Text('Details', {
+          left: x + COL_X[1] + 8,
+          top: y + 2 * ROW_HEIGHT + 8,
+          fontSize: 13,
+          fontWeight: 'bold',
+          fill: '#222',
+          selectable: false,
+          evented: false,
+        }));
+        fabricInstance.add(new fabric.Text(titleBlock.details || '', {
+          left: x + COL_X[1] + 8,
+          top: y + 2 * ROW_HEIGHT + 28,
+          fontSize: 13,
+          fill: '#1976d2',
+          selectable: false,
+          evented: false,
+        }));
+        fabricInstance.add(new fabric.Text(titleBlock.scale || '1:1', {
+          left: x + COL_X[3] + COL_WIDTHS[3] - 8,
+          top: y + ROW_HEIGHT + 28,
+          fontSize: 13,
+          fill: '#1976d2',
+          selectable: false,
+          evented: false,
+          originX: 'right',
+        }));
+        fabricInstance.add(new fabric.Text('1 / 1', {
+          left: x + COL_X[3] + COL_WIDTHS[3] - 8,
+          top: y + 2 * ROW_HEIGHT + 8,
+          fontSize: 13,
+          fontWeight: 'bold',
+          fill: '#222',
+          selectable: false,
+          evented: false,
+          originX: 'right',
+        }));
+      } else {
+        if (!canvasRef.current) console.warn('Canvas ref not set');
+        if (!fabric || !fabric.Canvas) console.error('Fabric.js not loaded or Canvas missing');
+      }
+    }).catch((err) => {
+      console.error('Failed to load fabric:', err);
+    });
+
+    return () => {
+      // Remove symbol objects only (not grid lines)
+      if (fabricRef.current && symbolObjects.length > 0) {
+        symbolObjects.forEach(obj => fabricRef.current.remove(obj));
+      }
+      fabricRef.current?.dispose();
+      fabricRef.current = null;
+    };
+  }, [elements, symbolLibrary, viewport, scale, selected, setElements, containerSize, draggedSymbol, ghostPos, titleBlock]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -378,15 +520,28 @@ const FabricCanvas: React.FC = () => {
   return (
     <div
       ref={containerRef}
-      style={{ width: '100%', height: '100%', position: 'relative', background: '#222', borderRadius: 0, boxShadow: '0 4px 24px 0 rgba(0,0,0,0.18)', border: '1.5px solid #e0e0e0' }}
+      role="region"
+      aria-label="Schematic drawing canvas"
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        background: '#fff',
+        border: '2px solid #222',
+        borderRadius: 10,
+        boxShadow: '0 4px 24px 0 rgba(30, 34, 44, 0.10), 0 1.5px 6px 0 rgba(30, 34, 44, 0.08)',
+        overflow: 'hidden',
+        outline: 'none',
+      }}
+      tabIndex={0}
+      onFocus={e => e.currentTarget.style.boxShadow = '0 0 0 3px #1976d2, 0 4px 24px 0 rgba(30, 34, 44, 0.10), 0 1.5px 6px 0 rgba(30, 34, 44, 0.08)'}
+      onBlur={e => e.currentTarget.style.boxShadow = '0 4px 24px 0 rgba(30, 34, 44, 0.10), 0 1.5px 6px 0 rgba(30, 34, 44, 0.08)'}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       onDragLeave={handleDragLeave}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
-      tabIndex={0}
-      aria-label="Schematic Canvas"
     >
       <canvas
         ref={canvasRef}
@@ -396,7 +551,7 @@ const FabricCanvas: React.FC = () => {
           padding: 0,
           margin: 0,
           border: 0,
-          background: '#fff',
+          background: 'transparent',
           position: 'absolute',
           top: 0,
           left: 0,
@@ -404,26 +559,27 @@ const FabricCanvas: React.FC = () => {
           height: '100%',
           display: 'block',
         }}
-        tabIndex={-1}
-        aria-label="Drawing Area"
       />
-      {/* Drag ghost preview */}
-      {draggedSymbol && dragPos && (
+      {/* Ghost preview for drag-and-drop */}
+      {draggedSymbol && ghostPos && (
         <div
           style={{
             position: 'absolute',
-            left: dragPos.x - 24,
-            top: dragPos.y - 24,
             pointerEvents: 'none',
-            opacity: 0.6,
+            left: ghostPos.x - (draggedSymbol.dimensions?.width ?? 25) / 2,
+            top: ghostPos.y - (draggedSymbol.dimensions?.height ?? 25) / 2,
+            opacity: 0.5,
             zIndex: 10,
-            width: 48,
-            height: 48,
-            filter: 'drop-shadow(0 2px 8px rgba(30,30,60,0.18))',
+            width: draggedSymbol.dimensions?.width ?? 50,
+            height: draggedSymbol.dimensions?.height ?? 50,
+            filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.15))',
           }}
-          aria-label={`Preview: ${draggedSymbol.name}`}
+          aria-label="Symbol preview"
         >
-          <span dangerouslySetInnerHTML={{ __html: draggedSymbol.svg }} />
+          <div
+            style={{ width: '100%', height: '100%' }}
+            dangerouslySetInnerHTML={{ __html: draggedSymbol.svg }}
+          />
         </div>
       )}
       {/* Fallback message for debugging */}

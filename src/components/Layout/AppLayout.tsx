@@ -30,7 +30,6 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SettingsIcon from '@mui/icons-material/Settings';
 import TitleIcon from '@mui/icons-material/Title';
-import { selectedToolAtom } from '../../stores/appStore';
 
 const drawerWidth = 320;
 
@@ -105,7 +104,7 @@ const SidebarPanel: React.FC = () => {
 
 const AppLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useAtom(leftSidebarCollapsedAtom);
-  const [selectedTool, setSelectedTool] = useAtom(selectedToolAtom);
+  const [selectedTool, setSelectedTool] = React.useState<CanvasTool>('select');
   const sidebarWidth = collapsed ? 56 : drawerWidth;
   // Toolbar/canvas state
   const [viewport, setViewport] = useAtom(canvasViewportAtom);
@@ -168,26 +167,26 @@ const AppLayout: React.FC = () => {
           minHeight: 0,
           display: 'flex',
           flexDirection: 'column',
-          height: '100vh',
+          height: '94vh',
           bgcolor: '#222',
         }}
       >
         {/* Spacer for header height */}
         <Toolbar />
         {/* Toolbar at the top of main area */}
-        <MainToolbar
-          selectedTool={selectedTool}
-          onSelectTool={setSelectedTool}
-          onUndo={handleUndo}
-          onRedo={handleRedo}
-          onDelete={handleDelete}
-          onZoomIn={handleZoomIn}
-          onZoomOut={handleZoomOut}
-          onResetView={handleResetView}
-          zoomLevel={viewport.zoom}
-          minZoom={MIN_ZOOM}
-          maxZoom={MAX_ZOOM}
-        />
+          <MainToolbar
+            selectedTool={selectedTool}
+            onSelectTool={setSelectedTool}
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+            onDelete={handleDelete}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            onResetView={handleResetView}
+            zoomLevel={viewport.zoom}
+            minZoom={MIN_ZOOM}
+            maxZoom={MAX_ZOOM}
+          />
         {/* Canvas area centered */}
         <Box sx={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
           <Paper
@@ -208,8 +207,6 @@ const AppLayout: React.FC = () => {
             <FabricCanvas />
           </Paper>
         </Box>
-        {/* Status Bar */}
-        <StatusBar />
       </Box>
 
       {/* Right Sidebar */}
@@ -237,6 +234,9 @@ const AppLayout: React.FC = () => {
         {/* SidebarPanel goes here */}
         <SidebarPanel />
       </Drawer>
+
+      {/* StatusBar at the bottom */}
+      <StatusBar />
     </Box>
   );
 };

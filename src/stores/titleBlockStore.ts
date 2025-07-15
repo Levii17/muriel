@@ -5,8 +5,8 @@ export const titleBlockAtom = atom<TitleBlockData>({
   company: '',
   project: '',
   designer: '',
-  ecsaNumber: '',
   date: '',
   scale: '',
-  revision: '',
+  drawingTitle: '',
+  details: '',
 });
