@@ -7,6 +7,7 @@ import { selectedElementsAtom } from '../../stores/canvasStore';
 import { draggedSymbolAtom } from '../../stores/symbolStore';
 import { titleBlockAtom } from '../../stores/titleBlockStore';
 import type { ElectricalSymbol, CanvasElement } from '../../types';
+import { parseSVGToFabric, createSymbolGroup, createFallbackShape } from '../../utils/svg-utils';
 
 // Remove fixed canvas size; will use parent container size
 const GRID_SIZE = 10;
@@ -171,16 +172,22 @@ const FabricCanvas: React.FC = () => {
       console.log('Dropped symbol:', symbol);
       const pos = getPointerPosition(e);
       const snapped = snapToGrid(pos.x, pos.y);
-      setElements((prev) => [
-        ...prev,
-        {
+      console.log('Drop position:', { original: pos, snapped });
+      
+      const newElement: CanvasElement = {
           id: `${symbol.id}-${Date.now()}`,
           symbolId: symbol.id,
           position: snapped,
           rotation: 0,
           properties: {},
-        } as CanvasElement,
-      ]);
+      };
+      
+      console.log('Creating new canvas element:', newElement);
+      setElements((prev) => {
+        const newElements = [...prev, newElement];
+        console.log('Updated elements array:', newElements);
+        return newElements;
+      });
     }
   };
 
@@ -469,6 +476,79 @@ const FabricCanvas: React.FC = () => {
           evented: false,
           originX: 'right',
         }));
+
+        // --- SYMBOL RENDERING LOGIC ---
+        // Clear existing symbol objects
+        symbolObjects.forEach(obj => fabricInstance.remove(obj));
+        symbolObjects = [];
+
+        // Render all canvas elements as symbols
+        console.log('Rendering symbols:', { elementsCount: elements.length, symbolLibraryCount: symbolLibrary.length });
+        
+        // Process elements asynchronously to handle SVG parsing
+        const renderSymbols = async () => {
+          for (const element of elements) {
+            const symbol = symbolLibrary.find(s => s.id === element.symbolId);
+            if (!symbol) {
+              console.warn(`Symbol not found for element ${element.id} with symbolId ${element.symbolId}`);
+              continue;
+            }
+
+            try {
+              // Try to parse the SVG first
+              console.log(`Attempting to parse SVG for symbol: ${symbol.id}`);
+              const svgObjects = await parseSVGToFabric(symbol.svg);
+              
+              if (svgObjects && svgObjects.length > 0) {
+                // Create a group from the parsed SVG objects
+                const group = await createSymbolGroup(svgObjects, {
+                  left: element.position.x - (element.width || symbol.dimensions.width) / 2,
+                  top: element.position.y - (element.height || symbol.dimensions.height) / 2,
+                  angle: element.rotation,
+                  width: element.width || symbol.dimensions.width,
+                  height: element.height || symbol.dimensions.height,
+                  dataId: element.id,
+                });
+
+                // Store reference for cleanup
+                symbolObjects.push(group);
+                
+                // Add to canvas
+                fabricInstance.add(group);
+                console.log(`Successfully rendered SVG for symbol: ${symbol.id}`);
+              } else {
+                throw new Error('No objects created from SVG');
+              }
+            } catch (error) {
+              console.warn(`SVG parsing failed for symbol ${symbol.id}, using fallback:`, error);
+              
+              // Use fallback shape
+              const fallbackObject = await createFallbackShape(symbol, {
+                left: element.position.x,
+                top: element.position.y,
+                angle: element.rotation,
+                dataId: element.id,
+              });
+
+              // Store reference for cleanup
+              symbolObjects.push(fallbackObject);
+              
+              // Add to canvas
+              fabricInstance.add(fallbackObject);
+              console.log(`Used fallback shape for symbol: ${symbol.id}`);
+            }
+          }
+
+          // Render all changes
+          fabricInstance.renderAll();
+          console.log(`Rendering complete. Total symbols: ${symbolObjects.length}`);
+        };
+
+        // Execute the async rendering
+        renderSymbols().catch(error => {
+          console.error('Error during symbol rendering:', error);
+        });
+
       } else {
         if (!canvasRef.current) console.warn('Canvas ref not set');
         if (!fabric || !fabric.Canvas) console.error('Fabric.js not loaded or Canvas missing');
@@ -480,7 +560,13 @@ const FabricCanvas: React.FC = () => {
     return () => {
       // Remove symbol objects only (not grid lines)
       if (fabricRef.current && symbolObjects.length > 0) {
-        symbolObjects.forEach(obj => fabricRef.current.remove(obj));
+        symbolObjects.forEach(obj => {
+          try {
+            fabricRef.current.remove(obj);
+          } catch (error) {
+            console.warn('Error removing symbol object:', error);
+          }
+        });
       }
       fabricRef.current?.dispose();
       fabricRef.current = null;

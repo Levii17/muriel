@@ -1,0 +1,38 @@
+[
+  {
+    "id": "switches",
+    "name": "Switches",
+    "description": "Electrical switches and controls",
+    "icon": "toggle_on"
+  },
+  {
+    "id": "outlets",
+    "name": "Outlets",
+    "description": "Socket outlets and power points",
+    "icon": "power"
+  },
+  {
+    "id": "protection",
+    "name": "Protection",
+    "description": "Circuit breakers, fuses, and protection devices",
+    "icon": "security"
+  },
+  {
+    "id": "distribution",
+    "name": "Distribution",
+    "description": "Distribution boards and panels",
+    "icon": "dashboard"
+  },
+  {
+    "id": "lights",
+    "name": "Lights",
+    "description": "Lighting fixtures and fittings",
+    "icon": "lightbulb"
+  },
+  {
+    "id": "motors",
+    "name": "Motors",
+    "description": "Electric motors and drives",
+    "icon": "settings"
+  }
+]

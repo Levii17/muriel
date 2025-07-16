@@ -1,67 +1,260 @@
 [
     {
-      "id": "switch-single-pole",
-      "name": "Single-Pole Switch",
-      "category": "switches",
-      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><line x1=\"10\" y1=\"25\" x2=\"40\" y2=\"25\" stroke=\"#000\" stroke-width=\"2\"/></svg>",
+      "id": "circuit-breaker-single-pole",
+      "name": "Circuit Breaker (Single Pole)",
+      "category": "protection",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><line x1=\"25\" y1=\"5\" x2=\"25\" y2=\"15\" stroke=\"#000\" stroke-width=\"2\"/><rect x=\"15\" y=\"15\" width=\"20\" height=\"25\" fill=\"none\" stroke=\"#000\" stroke-width=\"2\"/><circle cx=\"25\" cy=\"22\" r=\"2\" fill=\"#000\"/><circle cx=\"25\" cy=\"33\" r=\"2\" fill=\"#000\"/><line x1=\"30\" y1=\"21\" x2=\"25\" y2=\"33\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"25\" y1=\"40\" x2=\"25\" y2=\"45\" stroke=\"#000\" stroke-width=\"2\"/></svg>",
       "connectionPoints": [
-        { "x": 10, "y": 25, "type": "input" },
-        { "x": 40, "y": 25, "type": "output" }
+        { "x": 25, "y": 5, "type": "input" },
+        { "x": 25, "y": 45, "type": "output" }
       ],
-      "properties": {},
+      "properties": {
+        "rating": "16A",
+        "type": "MCB",
+        "trip_curve": "B"
+      },
       "sansCompliant": true,
       "dimensions": { "width": 50, "height": 50 }
     },
     {
-      "id": "socket-16a",
-      "name": "Socket Outlet (16A)",
-      "category": "outlets",
-      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><rect x=\"10\" y=\"10\" width=\"30\" height=\"30\" stroke=\"#000\" stroke-width=\"2\" fill=\"#fff\"/></svg>",
+      "id": "circuit-breaker-double-pole",
+      "name": "Circuit Breaker (Double Pole)",
+      "category": "protection",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><rect x=\"12.5\" y=\"15\" width=\"25\" height=\"20\" fill=\"none\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"18.75\" y1=\"5\" x2=\"18.75\" y2=\"18.5\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"31.25\" y1=\"5\" x2=\"31.25\" y2=\"18.5\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"18.75\" y1=\"31.5\" x2=\"18.75\" y2=\"45\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"31.25\" y1=\"31.5\" x2=\"31.25\" y2=\"45\" stroke=\"#000\" stroke-width=\"2\"/><circle cx=\"18.75\" cy=\"20\" r=\"1.5\" fill=\"#000\"/><circle cx=\"31.25\" cy=\"20\" r=\"1.5\" fill=\"#000\"/><circle cx=\"18.75\" cy=\"30\" r=\"1.5\" fill=\"#000\"/><circle cx=\"31.25\" cy=\"30\" r=\"1.5\" fill=\"#000\"/><line x1=\"18.75\" y1=\"28.5\" x2=\"23.9\" y2=\"19.5\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"31.25\" y1=\"28.5\" x2=\"36.4\" y2=\"19.5\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"21.325\" y1=\"24\" x2=\"33.825\" y2=\"24\" stroke=\"#000\" stroke-width=\"2\" stroke-dasharray=\"0.75,0.75\"/></svg>",
+      "connectionPoints": [
+        { "x": 18.75, "y": 5, "type": "input" },
+        { "x": 31.25, "y": 5, "type": "input" },
+        { "x": 18.75, "y": 45, "type": "output" },
+        { "x": 31.25, "y": 45, "type": "output" }
+      ],
+      "properties": {
+        "rating": "32A",
+        "type": "MCB",
+        "trip_curve": "B",
+        "poles": "2"
+      },
+      "sansCompliant": true,
+      "dimensions": { "width": 50, "height": 50 }
+    },
+    {
+      "id": "circuit-breaker-triple-pole",
+      "name": "Circuit Breaker (Triple Pole)",
+      "category": "protection",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><rect x=\"5\" y=\"15\" width=\"40\" height=\"20\" fill=\"none\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"12.5\" y1=\"5\" x2=\"12.5\" y2=\"18.5\" stroke=\"#ff0000\" stroke-width=\"2\"/><line x1=\"25\" y1=\"5\" x2=\"25\" y2=\"18.5\" stroke=\"#ffff00\" stroke-width=\"2\"/><line x1=\"37.5\" y1=\"5\" x2=\"37.5\" y2=\"18.5\" stroke=\"#0000ff\" stroke-width=\"2\"/><line x1=\"12.5\" y1=\"31.5\" x2=\"12.5\" y2=\"45\" stroke=\"#ff0000\" stroke-width=\"2\"/><line x1=\"25\" y1=\"31.5\" x2=\"25\" y2=\"45\" stroke=\"#ffff00\" stroke-width=\"2\"/><line x1=\"37.5\" y1=\"31.5\" x2=\"37.5\" y2=\"45\" stroke=\"#0000ff\" stroke-width=\"2\"/><circle cx=\"12.5\" cy=\"20\" r=\"1.5\" fill=\"#000\"/><circle cx=\"25\" cy=\"20\" r=\"1.5\" fill=\"#000\"/><circle cx=\"37.5\" cy=\"20\" r=\"1.5\" fill=\"#000\"/><circle cx=\"12.5\" cy=\"30\" r=\"1.5\" fill=\"#000\"/><circle cx=\"25\" cy=\"30\" r=\"1.5\" fill=\"#000\"/><circle cx=\"37.5\" cy=\"30\" r=\"1.5\" fill=\"#000\"/><line x1=\"12.5\" y1=\"28.5\" x2=\"15.9\" y2=\"19.5\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"25\" y1=\"28.5\" x2=\"28.4\" y2=\"19.5\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"37.5\" y1=\"28.5\" x2=\"40.9\" y2=\"19.5\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"14.2\" y1=\"24\" x2=\"23.4\" y2=\"24\" stroke=\"#000\" stroke-width=\"2\" stroke-dasharray=\"0.75,0.75\"/><line x1=\"26.7\" y1=\"24\" x2=\"35.9\" y2=\"24\" stroke=\"#000\" stroke-width=\"2\" stroke-dasharray=\"0.75,0.75\"/></svg>",
+      "connectionPoints": [
+        { "x": 12.5, "y": 5, "type": "input" },
+        { "x": 25, "y": 5, "type": "input" },
+        { "x": 37.5, "y": 5, "type": "input" },
+        { "x": 12.5, "y": 45, "type": "output" },
+        { "x": 25, "y": 45, "type": "output" },
+        { "x": 37.5, "y": 45, "type": "output" }
+      ],
+      "properties": {
+        "rating": "63A",
+        "type": "MCB",
+        "trip_curve": "B",
+        "poles": "3",
+        "phases": "L1, L2, L3"
+      },
+      "sansCompliant": true,
+      "dimensions": { "width": 50, "height": 50 }
+    },
+    {
+      "id": "distribution-board",
+      "name": "Distribution Board",
+      "category": "distribution",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><rect x=\"10\" y=\"10\" width=\"30\" height=\"30\" fill=\"none\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"15\" y1=\"20\" x2=\"35\" y2=\"20\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"15\" y1=\"25\" x2=\"35\" y2=\"25\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"15\" y1=\"30\" x2=\"35\" y2=\"30\" stroke=\"#000\" stroke-width=\"2\"/><text x=\"25\" y=\"18\" text-anchor=\"middle\" font-size=\"8\" fill=\"#000\">DB</text></svg>",
       "connectionPoints": [
         { "x": 25, "y": 10, "type": "input" },
         { "x": 25, "y": 40, "type": "output" }
       ],
-      "properties": {},
+      "properties": {
+        "type": "Main",
+        "ways": "12"
+      },
       "sansCompliant": true,
       "dimensions": { "width": 50, "height": 50 }
     },
-    
     {
-      "id": "motor-ac",
-      "name": "Motor (AC)",
+      "id": "isolator-double-pole",
+      "name": "Isolator (Double Pole)",
+      "category": "switches",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><line x1=\"18.75\" y1=\"5\" x2=\"18.75\" y2=\"18.5\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"31.25\" y1=\"5\" x2=\"31.25\" y2=\"18.5\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"18.75\" y1=\"31.5\" x2=\"18.75\" y2=\"45\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"31.25\" y1=\"31.5\" x2=\"31.25\" y2=\"45\" stroke=\"#000\" stroke-width=\"2\"/><circle cx=\"18.75\" cy=\"20\" r=\"1.5\" fill=\"#000\"/><circle cx=\"31.25\" cy=\"20\" r=\"1.5\" fill=\"#000\"/><circle cx=\"18.75\" cy=\"30\" r=\"1.5\" fill=\"#000\"/><circle cx=\"31.25\" cy=\"30\" r=\"1.5\" fill=\"#000\"/><line x1=\"18.75\" y1=\"28.5\" x2=\"23.9\" y2=\"19.5\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"31.25\" y1=\"28.5\" x2=\"36.4\" y2=\"19.5\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"21.325\" y1=\"24\" x2=\"33.825\" y2=\"24\" stroke=\"#000\" stroke-width=\"2\" stroke-dasharray=\"0.75,0.75\"/></svg>",
+      "connectionPoints": [
+        { "x": 18.75, "y": 5, "type": "input" },
+        { "x": 31.25, "y": 5, "type": "input" },
+        { "x": 18.75, "y": 45, "type": "output" },
+        { "x": 31.25, "y": 45, "type": "output" }
+      ],
+      "properties": {
+        "type": "Isolator",
+        "rating": "63A",
+        "poles": "2"
+      },
+      "sansCompliant": true,
+      "dimensions": { "width": 50, "height": 50 }
+    },
+    {
+      "id": "push-button-start",
+      "name": "Push Button (Start)",
+      "category": "switches",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><text x=\"25\" y=\"10\" text-anchor=\"middle\" font-family=\"Arial, sans-serif\" font-size=\"8\" font-weight=\"bold\" fill=\"#000\">I</text><line x1=\"15\" y1=\"18\" x2=\"15\" y2=\"22\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"15\" y1=\"18\" x2=\"35\" y2=\"18\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"35\" y1=\"18\" x2=\"35\" y2=\"22\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"25\" y1=\"18\" x2=\"25\" y2=\"30\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"12\" y1=\"30\" x2=\"38\" y2=\"30\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"5\" y1=\"40\" x2=\"15\" y2=\"40\" stroke=\"#000\" stroke-width=\"2\"/><circle cx=\"15\" cy=\"40\" r=\"3\" fill=\"#000\"/><circle cx=\"35\" cy=\"40\" r=\"3\" fill=\"#000\"/><line x1=\"35\" y1=\"40\" x2=\"45\" y2=\"40\" stroke=\"#000\" stroke-width=\"2\"/></svg>",
+      "connectionPoints": [
+        { "x": 15, "y": 40, "type": "input" },
+        { "x": 35, "y": 40, "type": "output" }
+      ],
+      "properties": { "type": "Start" },
+      "sansCompliant": true,
+      "dimensions": { "width": 50, "height": 50 }
+    },
+    {
+      "id": "push-button-stop",
+      "name": "Push Button (Stop)",
+      "category": "switches",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><text x=\"25\" y=\"10\" text-anchor=\"middle\" font-family=\"Arial, sans-serif\" font-size=\"8\" font-weight=\"bold\" fill=\"#000\">O</text><line x1=\"15\" y1=\"18\" x2=\"15\" y2=\"22\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"15\" y1=\"18\" x2=\"35\" y2=\"18\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"35\" y1=\"18\" x2=\"35\" y2=\"22\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"25\" y1=\"18\" x2=\"25\" y2=\"38\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"12\" y1=\"38\" x2=\"38\" y2=\"38\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"5\" y1=\"35\" x2=\"15\" y2=\"35\" stroke=\"#000\" stroke-width=\"2\"/><circle cx=\"15\" cy=\"35\" r=\"3\" fill=\"#000\"/><circle cx=\"35\" cy=\"35\" r=\"3\" fill=\"#000\"/><line x1=\"35\" y1=\"35\" x2=\"45\" y2=\"35\" stroke=\"#000\" stroke-width=\"2\"/></svg>",
+      "connectionPoints": [
+        { "x": 15, "y": 35, "type": "input" },
+        { "x": 35, "y": 35, "type": "output" }
+      ],
+      "properties": { "type": "Stop" },
+      "sansCompliant": true,
+      "dimensions": { "width": 50, "height": 50 }
+    },
+    {
+      "id": "push-button-emergency-stop",
+      "name": "Push Button (Emergency Stop)",
+      "category": "switches",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><text x=\"25\" y=\"10\" text-anchor=\"middle\" font-family=\"Arial, sans-serif\" font-size=\"8\" font-weight=\"bold\" fill=\"#000\">E/S</text><line x1=\"15\" y1=\"18\" x2=\"15\" y2=\"22\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"15\" y1=\"18\" x2=\"35\" y2=\"18\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"35\" y1=\"18\" x2=\"35\" y2=\"22\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"25\" y1=\"18\" x2=\"25\" y2=\"38\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"12\" y1=\"38\" x2=\"38\" y2=\"38\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"5\" y1=\"35\" x2=\"15\" y2=\"35\" stroke=\"#000\" stroke-width=\"2\"/><circle cx=\"15\" cy=\"35\" r=\"3\" fill=\"#000\"/><circle cx=\"35\" cy=\"35\" r=\"3\" fill=\"#000\"/><line x1=\"35\" y1=\"35\" x2=\"45\" y2=\"35\" stroke=\"#000\" stroke-width=\"2\"/></svg>",
+      "connectionPoints": [
+        { "x": 15, "y": 35, "type": "input" },
+        { "x": 35, "y": 35, "type": "output" }
+      ],
+      "properties": { "type": "Emergency Stop" },
+      "sansCompliant": true,
+      "dimensions": { "width": 50, "height": 50 }
+    },
+    {
+      "id": "coil-contactor",
+      "name": "Coil (Contactor)",
       "category": "motors",
-      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><circle cx=\"25\" cy=\"25\" r=\"22\" fill=\"#fff\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"2\" y1=\"25\" x2=\"12\" y2=\"25\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"38\" y1=\"25\" x2=\"48\" y2=\"25\" stroke=\"#000\" stroke-width=\"2\"/><path d=\"M18 32 L18 18 L25 28 L32 18 L32 32\" stroke=\"#000\" stroke-width=\"2\" fill=\"none\"/><path d=\"M22 36 Q23.5 34 25 36 Q26.5 38 28 36\" stroke=\"#000\" stroke-width=\"2\" fill=\"none\"/></svg>",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><line x1=\"25\" y1=\"5\" x2=\"25\" y2=\"15\" stroke=\"#000\" stroke-width=\"2\"/><rect x=\"15\" y=\"15\" width=\"20\" height=\"16\" fill=\"none\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"15\" y1=\"31\" x2=\"35\" y2=\"15\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"25\" y1=\"31\" x2=\"25\" y2=\"40\" stroke=\"#000\" stroke-width=\"2\"/><circle cx=\"25\" cy=\"5\" r=\"2\" fill=\"#000\"/><circle cx=\"25\" cy=\"40\" r=\"2\" fill=\"#000\"/><text x=\"10\" y=\"10\" font-family=\"Arial\" font-size=\"6\" font-weight=\"bold\">A</text><text x=\"10\" y=\"48\" font-family=\"Arial\" font-size=\"6\" font-weight=\"bold\">B</text><text x=\"40\" y=\"25\" font-family=\"Arial\" font-size=\"6\" font-weight=\"bold\">C</text></svg>",
       "connectionPoints": [
-        { "x": 2, "y": 25, "type": "input" },
-        { "x": 48, "y": 25, "type": "output" }
+        { "x": 25, "y": 5, "type": "input" },
+        { "x": 25, "y": 40, "type": "output" }
       ],
-      "properties": {},
+      "properties": { "type": "Contactor Coil" },
       "sansCompliant": true,
       "dimensions": { "width": 50, "height": 50 }
     },
     {
-      "id": "switch-no",
-      "name": "Switch (Normally Open)",
-      "category": "switches",
-      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><line x1=\"5\" y1=\"40\" x2=\"20\" y2=\"40\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"30\" y1=\"40\" x2=\"45\" y2=\"40\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"20\" y1=\"40\" x2=\"30\" y2=\"20\" stroke=\"#000\" stroke-width=\"2\"/></svg>",
+      "id": "contactor-triple",
+      "name": "Contactor (Triple)",
+      "category": "motors",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><line x1=\"8\" y1=\"5\" x2=\"8\" y2=\"22\" stroke=\"#f00\" stroke-width=\"2\"/><circle cx=\"8\" cy=\"22\" r=\"2\" fill=\"#000\"/><line x1=\"8\" y1=\"28\" x2=\"8\" y2=\"45\" stroke=\"#f00\" stroke-width=\"2\"/><circle cx=\"8\" cy=\"28\" r=\"2\" fill=\"#000\"/><line x1=\"21\" y1=\"5\" x2=\"21\" y2=\"22\" stroke=\"#ff0\" stroke-width=\"2\"/><circle cx=\"21\" cy=\"22\" r=\"2\" fill=\"#000\"/><line x1=\"21\" y1=\"28\" x2=\"21\" y2=\"45\" stroke=\"#ff0\" stroke-width=\"2\"/><circle cx=\"21\" cy=\"28\" r=\"2\" fill=\"#000\"/><line x1=\"34\" y1=\"5\" x2=\"34\" y2=\"22\" stroke=\"#00f\" stroke-width=\"2\"/><circle cx=\"34\" cy=\"22\" r=\"2\" fill=\"#000\"/><line x1=\"34\" y1=\"28\" x2=\"34\" y2=\"45\" stroke=\"#00f\" stroke-width=\"2\"/><circle cx=\"34\" cy=\"28\" r=\"2\" fill=\"#000\"/><line x1=\"8\" y1=\"25\" x2=\"46\" y2=\"25\" stroke=\"#000\" stroke-width=\"2\" stroke-dasharray=\"2,2\"/><rect x=\"38\" y=\"18\" width=\"8\" height=\"14\" fill=\"none\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"38\" y1=\"32\" x2=\"46\" y2=\"18\" stroke=\"#000\" stroke-width=\"2\"/></svg>",
       "connectionPoints": [
-        { "x": 5, "y": 40, "type": "input" },
-        { "x": 45, "y": 40, "type": "output" }
+        { "x": 8, "y": 5, "type": "input" },
+        { "x": 21, "y": 5, "type": "input" },
+        { "x": 34, "y": 5, "type": "input" },
+        { "x": 8, "y": 45, "type": "output" },
+        { "x": 21, "y": 45, "type": "output" },
+        { "x": 34, "y": 45, "type": "output" }
       ],
-      "properties": {},
+      "properties": { "type": "Triple Contactor" },
       "sansCompliant": true,
       "dimensions": { "width": 50, "height": 50 }
     },
     {
-      "id": "switch-nc",
-      "name": "Switch (Normally Closed)",
-      "category": "switches",
-      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><line x1=\"5\" y1=\"40\" x2=\"20\" y2=\"40\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"30\" y1=\"40\" x2=\"45\" y2=\"40\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"20\" y1=\"40\" x2=\"30\" y2=\"20\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"28\" y1=\"25\" x2=\"32\" y2=\"35\" stroke=\"#000\" stroke-width=\"2\"/></svg>",
+      "id": "coil-time-relay",
+      "name": "Coil (Time Relay)",
+      "category": "motors",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><line x1=\"25\" y1=\"5\" x2=\"25\" y2=\"15\" stroke=\"#000\" stroke-width=\"2\"/><rect x=\"15\" y=\"15\" width=\"20\" height=\"16\" fill=\"none\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"15\" y1=\"31\" x2=\"35\" y2=\"15\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"25\" y1=\"31\" x2=\"25\" y2=\"40\" stroke=\"#000\" stroke-width=\"2\"/><circle cx=\"25\" cy=\"5\" r=\"2\" fill=\"#000\"/><circle cx=\"25\" cy=\"40\" r=\"2\" fill=\"#000\"/><text x=\"40\" y=\"25\" font-family=\"Arial\" font-size=\"6\" font-weight=\"bold\">T</text></svg>",
       "connectionPoints": [
-        { "x": 5, "y": 40, "type": "input" },
-        { "x": 45, "y": 40, "type": "output" }
+        { "x": 25, "y": 5, "type": "input" },
+        { "x": 25, "y": 40, "type": "output" }
       ],
-      "properties": {},
+      "properties": { "type": "Time Relay Coil" },
+      "sansCompliant": true,
+      "dimensions": { "width": 50, "height": 50 }
+    },
+    {
+      "id": "contact-contactor-no",
+      "name": "Contact of Contactor (N/O)",
+      "category": "switches",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><line x1=\"5\" y1=\"25\" x2=\"20\" y2=\"25\" stroke=\"#000\" stroke-width=\"2\"/><circle cx=\"20\" cy=\"25\" r=\"3\" fill=\"#000\"/><line x1=\"30\" y1=\"25\" x2=\"45\" y2=\"25\" stroke=\"#000\" stroke-width=\"2\"/><circle cx=\"30\" cy=\"25\" r=\"3\" fill=\"#000\"/><line x1=\"17\" y1=\"15\" x2=\"33\" y2=\"15\" stroke=\"#000\" stroke-width=\"2\"/><text x=\"25\" y=\"10\" text-anchor=\"middle\" font-family=\"Arial, sans-serif\" font-size=\"8\" font-weight=\"bold\" fill=\"#000\">C</text></svg>",
+      "connectionPoints": [
+        { "x": 5, "y": 25, "type": "input" },
+        { "x": 45, "y": 25, "type": "output" }
+      ],
+      "properties": { "type": "Contactor NO" },
+      "sansCompliant": true,
+      "dimensions": { "width": 50, "height": 50 }
+    },
+    {
+      "id": "contact-contactor-nc",
+      "name": "Contact of Contactor (N/C)",
+      "category": "switches",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><line x1=\"5\" y1=\"25\" x2=\"20\" y2=\"25\" stroke=\"#000\" stroke-width=\"2\"/><circle cx=\"20\" cy=\"25\" r=\"3\" fill=\"#000\"/><line x1=\"30\" y1=\"25\" x2=\"45\" y2=\"25\" stroke=\"#000\" stroke-width=\"2\"/><circle cx=\"30\" cy=\"25\" r=\"3\" fill=\"#000\"/><line x1=\"17\" y1=\"20\" x2=\"33\" y2=\"20\" stroke=\"#000\" stroke-width=\"2\"/><text x=\"25\" y=\"15\" text-anchor=\"middle\" font-family=\"Arial, sans-serif\" font-size=\"8\" font-weight=\"bold\" fill=\"#000\">C</text></svg>",
+      "connectionPoints": [
+        { "x": 5, "y": 25, "type": "input" },
+        { "x": 45, "y": 25, "type": "output" }
+      ],
+      "properties": { "type": "Contactor NC" },
+      "sansCompliant": true,
+      "dimensions": { "width": 50, "height": 50 }
+    },
+    {
+      "id": "contact-timer-no",
+      "name": "Contact of Time Relay (N/O)",
+      "category": "switches",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><line x1=\"5\" y1=\"25\" x2=\"20\" y2=\"25\" stroke=\"#000\" stroke-width=\"2\"/><circle cx=\"20\" cy=\"25\" r=\"3\" fill=\"#000\"/><line x1=\"30\" y1=\"25\" x2=\"45\" y2=\"25\" stroke=\"#000\" stroke-width=\"2\"/><circle cx=\"30\" cy=\"25\" r=\"3\" fill=\"#000\"/><line x1=\"17\" y1=\"15\" x2=\"33\" y2=\"15\" stroke=\"#000\" stroke-width=\"2\"/><text x=\"25\" y=\"10\" text-anchor=\"middle\" font-family=\"Arial, sans-serif\" font-size=\"8\" font-weight=\"bold\" fill=\"#000\">T</text></svg>",
+      "connectionPoints": [
+        { "x": 5, "y": 25, "type": "input" },
+        { "x": 45, "y": 25, "type": "output" }
+      ],
+      "properties": { "type": "Timer NO" },
+      "sansCompliant": true,
+      "dimensions": { "width": 50, "height": 50 }
+    },
+    {
+      "id": "contact-timer-nc",
+      "name": "Contact of Time Relay (N/C)",
+      "category": "switches",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><line x1=\"5\" y1=\"25\" x2=\"20\" y2=\"25\" stroke=\"#000\" stroke-width=\"2\"/><circle cx=\"20\" cy=\"25\" r=\"3\" fill=\"#000\"/><line x1=\"30\" y1=\"25\" x2=\"45\" y2=\"25\" stroke=\"#000\" stroke-width=\"2\"/><circle cx=\"30\" cy=\"25\" r=\"3\" fill=\"#000\"/><line x1=\"17\" y1=\"20\" x2=\"33\" y2=\"20\" stroke=\"#000\" stroke-width=\"2\"/><text x=\"25\" y=\"15\" text-anchor=\"middle\" font-family=\"Arial, sans-serif\" font-size=\"8\" font-weight=\"bold\" fill=\"#000\">T</text></svg>",
+      "connectionPoints": [
+        { "x": 5, "y": 25, "type": "input" },
+        { "x": 45, "y": 25, "type": "output" }
+      ],
+      "properties": { "type": "Timer NC" },
+      "sansCompliant": true,
+      "dimensions": { "width": 50, "height": 50 }
+    },
+    {
+      "id": "overload-relay-triple",
+      "name": "Overload Relay (Triple Pole)",
+      "category": "protection",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><circle cx=\"13\" cy=\"7\" r=\"2\" fill=\"#000\"/><circle cx=\"25\" cy=\"7\" r=\"2\" fill=\"#000\"/><circle cx=\"37\" cy=\"7\" r=\"2\" fill=\"#000\"/><circle cx=\"13\" cy=\"43\" r=\"2\" fill=\"#000\"/><circle cx=\"25\" cy=\"43\" r=\"2\" fill=\"#000\"/><circle cx=\"37\" cy=\"43\" r=\"2\" fill=\"#000\"/><rect x=\"10\" y=\"15\" width=\"30\" height=\"20\" fill=\"none\" stroke=\"#000\" stroke-width=\"2\"/><text x=\"5\" y=\"25\" text-anchor=\"middle\" font-family=\"Arial, sans-serif\" font-size=\"6\" font-weight=\"bold\" fill=\"#000\">O/L</text><line x1=\"13\" y1=\"9\" x2=\"13\" y2=\"15\" stroke=\"#f00\" stroke-width=\"2\"/><line x1=\"25\" y1=\"9\" x2=\"25\" y2=\"15\" stroke=\"#ff0\" stroke-width=\"2\"/><line x1=\"37\" y1=\"9\" x2=\"37\" y2=\"15\" stroke=\"#00f\" stroke-width=\"2\"/><line x1=\"13\" y1=\"35\" x2=\"13\" y2=\"41\" stroke=\"#f00\" stroke-width=\"2\"/><line x1=\"25\" y1=\"35\" x2=\"25\" y2=\"41\" stroke=\"#ff0\" stroke-width=\"2\"/><line x1=\"37\" y1=\"35\" x2=\"37\" y2=\"41\" stroke=\"#00f\" stroke-width=\"2\"/><line x1=\"13\" y1=\"15\" x2=\"13\" y2=\"20\" stroke=\"#f00\" stroke-width=\"2\"/><line x1=\"13\" y1=\"20\" x2=\"17\" y2=\"20\" stroke=\"#f00\" stroke-width=\"2\"/><line x1=\"17\" y1=\"20\" x2=\"17\" y2=\"30\" stroke=\"#f00\" stroke-width=\"2\"/><line x1=\"13\" y1=\"30\" x2=\"17\" y2=\"30\" stroke=\"#f00\" stroke-width=\"2\"/><line x1=\"13\" y1=\"30\" x2=\"13\" y2=\"35\" stroke=\"#f00\" stroke-width=\"2\"/><line x1=\"25\" y1=\"15\" x2=\"25\" y2=\"20\" stroke=\"#ff0\" stroke-width=\"2\"/><line x1=\"25\" y1=\"20\" x2=\"29\" y2=\"20\" stroke=\"#ff0\" stroke-width=\"2\"/><line x1=\"29\" y1=\"20\" x2=\"29\" y2=\"30\" stroke=\"#ff0\" stroke-width=\"2\"/><line x1=\"25\" y1=\"30\" x2=\"29\" y2=\"30\" stroke=\"#ff0\" stroke-width=\"2\"/><line x1=\"25\" y1=\"30\" x2=\"25\" y2=\"35\" stroke=\"#ff0\" stroke-width=\"2\"/><line x1=\"37\" y1=\"15\" x2=\"37\" y2=\"20\" stroke=\"#00f\" stroke-width=\"2\"/><line x1=\"37\" y1=\"20\" x2=\"41\" y2=\"20\" stroke=\"#00f\" stroke-width=\"2\"/><line x1=\"41\" y1=\"20\" x2=\"41\" y2=\"30\" stroke=\"#00f\" stroke-width=\"2\"/><line x1=\"37\" y1=\"30\" x2=\"41\" y2=\"30\" stroke=\"#00f\" stroke-width=\"2\"/><line x1=\"37\" y1=\"30\" x2=\"37\" y2=\"35\" stroke=\"#00f\" stroke-width=\"2\"/></svg>",
+      "connectionPoints": [
+        { "x": 13, "y": 7, "type": "input" },
+        { "x": 25, "y": 7, "type": "input" },
+        { "x": 37, "y": 7, "type": "input" },
+        { "x": 13, "y": 43, "type": "output" },
+        { "x": 25, "y": 43, "type": "output" },
+        { "x": 37, "y": 43, "type": "output" }
+      ],
+      "properties": { "type": "Overload Relay Triple" },
+      "sansCompliant": true,
+      "dimensions": { "width": 50, "height": 50 }
+    },
+    {
+      "id": "overload-relay-single",
+      "name": "Overload Relay (Single)",
+      "category": "protection",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"0 0 50 50\"><circle cx=\"25\" cy=\"7\" r=\"2\" fill=\"#000\"/><circle cx=\"25\" cy=\"43\" r=\"2\" fill=\"#000\"/><rect x=\"15\" y=\"15\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"#000\" stroke-width=\"2\"/><text x=\"5\" y=\"25\" text-anchor=\"middle\" font-family=\"Arial, sans-serif\" font-size=\"6\" font-weight=\"bold\" fill=\"#000\">O/L</text><line x1=\"25\" y1=\"9\" x2=\"25\" y2=\"15\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"25\" y1=\"35\" x2=\"25\" y2=\"41\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"25\" y1=\"15\" x2=\"25\" y2=\"20\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"25\" y1=\"20\" x2=\"35\" y2=\"20\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"35\" y1=\"20\" x2=\"35\" y2=\"30\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"25\" y1=\"30\" x2=\"35\" y2=\"30\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"25\" y1=\"30\" x2=\"25\" y2=\"35\" stroke=\"#000\" stroke-width=\"2\"/></svg>",
+      "connectionPoints": [
+        { "x": 25, "y": 7, "type": "input" },
+        { "x": 25, "y": 43, "type": "output" }
+      ],
+      "properties": { "type": "Overload Relay Single" },
       "sansCompliant": true,
       "dimensions": { "width": 50, "height": 50 }
     }
