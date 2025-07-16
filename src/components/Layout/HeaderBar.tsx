@@ -3,9 +3,6 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import CloudDoneIcon from '@mui/icons-material/CloudDone';
-import CloudOffIcon from '@mui/icons-material/CloudOff';
-import CircularProgress from '@mui/material/CircularProgress';
 import EditIcon from '@mui/icons-material/Edit';
 import MemoryIcon from '@mui/icons-material/Memory'; // chip icon
 import SchemaIcon from '@mui/icons-material/Schema'; // schematic icon
@@ -17,12 +14,9 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import InputBase from '@mui/material/InputBase';
 import { useAtom } from 'jotai';
-import { saveStatusAtom, isOnlineAtom } from '../../stores/appStore';
 import { titleBlockAtom } from '../../stores/titleBlockStore';
 
 const HeaderBar: React.FC = () => {
-  const [saveStatus] = useAtom(saveStatusAtom);
-  const [isOnline] = useAtom(isOnlineAtom);
   const [titleBlock, setTitleBlock] = useAtom(titleBlockAtom);
   const [editing, setEditing] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -40,31 +34,6 @@ const HeaderBar: React.FC = () => {
   const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') setEditing(false);
   };
-
-  let statusContent: React.ReactNode = null;
-  if (saveStatus === 'saving') {
-    statusContent = (
-      <Box display="flex" alignItems="center" gap={1}>
-        <CircularProgress size={16} color="inherit" />
-        <Typography variant="body2">Saving...</Typography>
-      </Box>
-    );
-  } else if (saveStatus === 'saved') {
-    statusContent = (
-      <Box display="flex" alignItems="center" gap={1}>
-        <CloudDoneIcon fontSize="small" color="success" />
-        <Typography variant="body2">Saved</Typography>
-      </Box>
-    );
-  } else if (saveStatus === 'error') {
-    statusContent = (
-      <Typography variant="body2" color="error">Save Error</Typography>
-    );
-  } else {
-    statusContent = (
-      <Typography variant="body2">Idle</Typography>
-    );
-  }
 
   return (
     <AppBar position="fixed" color="default" elevation={1} sx={{ zIndex: 1201 }}>

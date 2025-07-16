@@ -1,11 +1,7 @@
 # Snap-to-Grid Rule for Symbol Placement
 
-All symbol placement on the schematic canvas **must** snap to the nearest 10px grid point. Use the `snapToGrid` utility from [grid-utils.ts](mdc:src/utils/grid-utils.ts) for all drag, drop, and move operations involving symbols. This ensures alignment and consistency with the visual grid defined in [CanvasGrid.tsx](mdc:src/components/Canvas/CanvasGrid.tsx).
+All symbol placement on the schematic canvas **must** snap to the nearest 10px grid point. Use the `snapToGrid` utility from [grid-utils.ts](mdc:src/utils/grid-utils.ts) for all drag, drop, and move operations involving symbols. This ensures alignment and consistency with the visual grid defined in the Fabric.js-based canvas implementation.
 
-**References:**
-- See `.cursorrules` ("Snap-to-grid for all symbol placement")
-- [snapToGrid function](mdc:src/utils/grid-utils.ts)
-- [SchematicCanvas.tsx](mdc:src/components/Canvas/SchematicCanvas.tsx) for drag/drop logic
 description:
 globs:
 alwaysApply: false

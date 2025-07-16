@@ -8,7 +8,6 @@ import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import GridOnIcon from '@mui/icons-material/GridOn';
 import Chip from '@mui/material/Chip';
 import Switch from '@mui/material/Switch';
-import Tooltip from '@mui/material/Tooltip';
 import { useAtom } from 'jotai';
 import { canvasViewportAtom } from '../../stores/canvasStore';
 
@@ -30,7 +29,7 @@ const StatusBar: React.FC = () => {
     }
   };
   // Placeholder for grid toggle
-  const [gridOn, setGridOn] = React.useState(true);
+  const [gridOn] = React.useState(true);
 
   return (
     <Paper

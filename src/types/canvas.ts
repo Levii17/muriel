@@ -1,5 +1,3 @@
-import type { ElectricalSymbol } from './symbols';
-
 export interface CanvasElement {
   id: string;
   symbolId: string;

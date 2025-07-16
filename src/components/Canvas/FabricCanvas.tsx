@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useSetAtom, useAtom } from 'jotai';
+import { useAtom } from 'jotai';
 import { canvasElementsAtom } from '../../stores/canvasStore';
 import { symbolLibraryAtom } from '../../stores/symbolStore';
 import { canvasViewportAtom } from '../../stores/canvasStore';
@@ -11,7 +11,6 @@ import type { ElectricalSymbol, CanvasElement } from '../../types';
 // Remove fixed canvas size; will use parent container size
 const GRID_SIZE = 10;
 const MAJOR_GRID_SIZE = 50;
-const MARGIN_PX = 40; // 10mm * 4px
 
 const snapToGrid = (x: number, y: number) => ({
   x: Math.round(x / GRID_SIZE) * GRID_SIZE,
@@ -31,9 +30,6 @@ const FabricCanvas: React.FC = () => {
   const [draggedSymbol, setDraggedSymbol] = useAtom(draggedSymbolAtom);
   const [ghostPos, setGhostPos] = React.useState<{ x: number; y: number } | null>(null);
   const [titleBlock] = useAtom(titleBlockAtom);
-
-  // Helper to find Fabric object by element id
-  const symbolObjectMap = React.useRef<Record<string, any>>({});
 
   // Debug: Log the loaded symbol library on mount
   React.useEffect(() => {
@@ -188,7 +184,7 @@ const FabricCanvas: React.FC = () => {
     }
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
+  const handleDragLeave = () => {
     setGhostPos(null);
   };
 
@@ -293,10 +289,9 @@ const FabricCanvas: React.FC = () => {
         const TITLE_BLOCK_WIDTH = 400;
         const TITLE_BLOCK_HEIGHT = 100;
         const ROWS = 3;
-        const COLS = 4;
         const COL_WIDTHS = [60, 120, 140, 80]; // logo, left, center, right
         const ROW_HEIGHT = TITLE_BLOCK_HEIGHT / ROWS;
-        const COL_X = COL_WIDTHS.reduce((acc, w, i) => {
+        const COL_X = COL_WIDTHS.reduce((acc, _, i) => {
           acc.push((acc[i - 1] || 0) + (COL_WIDTHS[i - 1] || 0));
           return acc;
         }, [] as number[]);
@@ -315,6 +310,42 @@ const FabricCanvas: React.FC = () => {
           selectable: false,
           evented: false,
         }));
+        
+        // Add the logo image to the logo cell
+        const logoCellX = x;
+        const logoCellY = y;
+        const logoCellWidth = COL_WIDTHS[0];
+        const logoCellHeight = TITLE_BLOCK_HEIGHT;
+        
+        // Load logo image
+        const imgElement = new Image();
+        imgElement.crossOrigin = 'anonymous';
+        
+        imgElement.onload = () => {
+          // Convert to Fabric.js image
+          const fabricImg = new fabric.Image(imgElement, {
+            left: logoCellX + (logoCellWidth - imgElement.width) / 2,
+            top: logoCellY + (logoCellHeight - imgElement.height) / 2,
+            selectable: false,
+            evented: false,
+            excludeFromExport: false,
+          });
+          
+          fabricInstance.add(fabricImg);
+          fabricInstance.renderAll();
+        };
+        
+        imgElement.onerror = (error) => {
+          console.error('Failed to load logo image:', error);
+        };
+        
+        imgElement.src = '/muriel-logo.png';
+        
+        // Add a timeout to check if the callback never executes
+        setTimeout(() => {
+          console.log('Logo loading timeout - callback may not have executed');
+        }, 5000);
+        
         // Draw cell borders (vertical)
         COL_X.slice(1).forEach((cx) => {
           fabricInstance.add(new fabric.Line([x + cx, y, x + cx, y + TITLE_BLOCK_HEIGHT], {
@@ -358,7 +389,7 @@ const FabricCanvas: React.FC = () => {
         }
         // --- TEXT FIELDS ---
         // Top row
-        fabricInstance.add(new fabric.Text('Organization', {
+        fabricInstance.add(new fabric.Text(titleBlock.company || 'Organization', {
           left: x + COL_X[1] + 8,
           top: y + 8,
           fontSize: 13,
@@ -367,7 +398,7 @@ const FabricCanvas: React.FC = () => {
           selectable: false,
           evented: false,
         }));
-        fabricInstance.add(new fabric.Text('Project Name', {
+        fabricInstance.add(new fabric.Text(titleBlock.project || 'Project Name', {
           left: x + COL_X[2] + 8,
           top: y + 8,
           fontSize: 13,
@@ -387,9 +418,9 @@ const FabricCanvas: React.FC = () => {
           originX: 'right',
         }));
         // Second and third row: Drawing Title(s) merged cell (centered vertically and horizontally)
-        fabricInstance.add(new fabric.Text('Drawing Title(s)', {
+        fabricInstance.add(new fabric.Text(titleBlock.drawingTitle || 'Drawing Title(s)', {
           left: x + COL_X[2] + COL_WIDTHS[2] / 2,
-          top: y + ROW_HEIGHT + ROW_HEIGHT / 2 - 18,
+          top: y + ROW_HEIGHT + ROW_HEIGHT / 2 + 16,
           fontSize: 13,
           fontWeight: 'bold',
           fill: '#222',
@@ -398,18 +429,8 @@ const FabricCanvas: React.FC = () => {
           originX: 'center',
           originY: 'center',
         }));
-        fabricInstance.add(new fabric.Text(titleBlock.drawingTitle || '', {
-          left: x + COL_X[2] + COL_WIDTHS[2] / 2,
-          top: y + ROW_HEIGHT + ROW_HEIGHT / 2 + 10,
-          fontSize: 13,
-          fill: '#1976d2',
-          selectable: false,
-          evented: false,
-          originX: 'center',
-          originY: 'center',
-        }));
         // Second row (left and right)
-        fabricInstance.add(new fabric.Text('Name', {
+        fabricInstance.add(new fabric.Text(titleBlock.designer || 'Name', {
           left: x + COL_X[1] + 8,
           top: y + ROW_HEIGHT + 8,
           fontSize: 13,
@@ -418,18 +439,8 @@ const FabricCanvas: React.FC = () => {
           selectable: false,
           evented: false,
         }));
-        fabricInstance.add(new fabric.Text('1:1', {
-          left: x + COL_X[3] + COL_WIDTHS[3] - 8,
-          top: y + ROW_HEIGHT + 8,
-          fontSize: 13,
-          fontWeight: 'bold',
-          fill: '#222',
-          selectable: false,
-          evented: false,
-          originX: 'right',
-        }));
         // Third row (left and right)
-        fabricInstance.add(new fabric.Text('Details', {
+        fabricInstance.add(new fabric.Text(titleBlock.details || 'Details', {
           left: x + COL_X[1] + 8,
           top: y + 2 * ROW_HEIGHT + 8,
           fontSize: 13,
@@ -438,19 +449,12 @@ const FabricCanvas: React.FC = () => {
           selectable: false,
           evented: false,
         }));
-        fabricInstance.add(new fabric.Text(titleBlock.details || '', {
-          left: x + COL_X[1] + 8,
-          top: y + 2 * ROW_HEIGHT + 28,
-          fontSize: 13,
-          fill: '#1976d2',
-          selectable: false,
-          evented: false,
-        }));
         fabricInstance.add(new fabric.Text(titleBlock.scale || '1:1', {
           left: x + COL_X[3] + COL_WIDTHS[3] - 8,
-          top: y + ROW_HEIGHT + 28,
+          top: y + ROW_HEIGHT + 8,
           fontSize: 13,
-          fill: '#1976d2',
+          fontWeight: 'bold',
+          fill: '#222',
           selectable: false,
           evented: false,
           originX: 'right',
@@ -520,22 +524,13 @@ const FabricCanvas: React.FC = () => {
   return (
     <div
       ref={containerRef}
-      role="region"
-      aria-label="Schematic drawing canvas"
       style={{
         width: '100%',
         height: '100%',
         position: 'relative',
-        background: '#fff',
-        border: '2px solid #222',
-        borderRadius: 10,
-        boxShadow: '0 4px 24px 0 rgba(30, 34, 44, 0.10), 0 1.5px 6px 0 rgba(30, 34, 44, 0.08)',
         overflow: 'hidden',
-        outline: 'none',
+        backgroundColor: '#fff',
       }}
-      tabIndex={0}
-      onFocus={e => e.currentTarget.style.boxShadow = '0 0 0 3px #1976d2, 0 4px 24px 0 rgba(30, 34, 44, 0.10), 0 1.5px 6px 0 rgba(30, 34, 44, 0.08)'}
-      onBlur={e => e.currentTarget.style.boxShadow = '0 4px 24px 0 rgba(30, 34, 44, 0.10), 0 1.5px 6px 0 rgba(30, 34, 44, 0.08)'}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       onDragLeave={handleDragLeave}
@@ -545,19 +540,12 @@ const FabricCanvas: React.FC = () => {
     >
       <canvas
         ref={canvasRef}
-        width={containerSize.width}
-        height={containerSize.height}
         style={{
-          padding: 0,
-          margin: 0,
-          border: 0,
-          background: 'transparent',
           position: 'absolute',
           top: 0,
           left: 0,
           width: '100%',
           height: '100%',
-          display: 'block',
         }}
       />
       {/* Ghost preview for drag-and-drop */}

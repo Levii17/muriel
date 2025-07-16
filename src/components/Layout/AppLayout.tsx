@@ -1,27 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import Drawer from '@mui/material/Drawer';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import SymbolPanel from '../SymbolLibrary/SymbolPanel';
 import FabricCanvas from '../Canvas/FabricCanvas';
 import TitleBlockPanel from '../../TitleBlock/TitleBlockPanel';
 import PropertyPanel from '../Toolbar/PropertyPanel';
 import StatusBar from './StatusBar';
 import { useAtom } from 'jotai';
-import { selectedElementsAtom } from '../../stores/canvasStore';
 import HeaderBar from './HeaderBar';
-import IconButton from '@mui/material/IconButton';
-import MenuOpenIcon from '@mui/icons-material/MenuOpen';
-import MenuIcon from '@mui/icons-material/Menu';
-import { leftSidebarCollapsedAtom } from '../../stores/appStore';
-import MainToolbar from '../Toolbar/MainToolbar';
-import type { CanvasTool } from '../Toolbar/MainToolbar';
 import { canvasViewportAtom } from '../../stores/canvasStore';
-import Tooltip from '@mui/material/Tooltip';
-import Divider from '@mui/material/Divider';
-import Fade from '@mui/material/Fade';
 import Paper from '@mui/material/Paper';
 import Toolbar from '@mui/material/Toolbar';
 import Accordion from '@mui/material/Accordion';
@@ -30,6 +18,8 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SettingsIcon from '@mui/icons-material/Settings';
 import TitleIcon from '@mui/icons-material/Title';
+import MainToolbar from '../Toolbar/MainToolbar';
+import type { CanvasTool } from '../Toolbar/MainToolbar';
 
 const drawerWidth = 320;
 
@@ -103,9 +93,7 @@ const SidebarPanel: React.FC = () => {
 };
 
 const AppLayout: React.FC = () => {
-  const [collapsed, setCollapsed] = useAtom(leftSidebarCollapsedAtom);
   const [selectedTool, setSelectedTool] = React.useState<CanvasTool>('select');
-  const sidebarWidth = collapsed ? 56 : drawerWidth;
   // Toolbar/canvas state
   const [viewport, setViewport] = useAtom(canvasViewportAtom);
   // Stub handlers for now

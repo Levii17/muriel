@@ -11,9 +11,8 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { filteredSymbolsAtom, symbolSearchQueryAtom, symbolLibraryAtom } from '../../stores/symbolStore';
+import { filteredSymbolsAtom, symbolSearchQueryAtom } from '../../stores/symbolStore';
 import { useSymbols } from '../../hooks/useSymbols';
-import SymbolItem from './SymbolItem';
 
 const CATEGORIES = [
   { label: 'All', value: '' },
