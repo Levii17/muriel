@@ -20,6 +20,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import TitleIcon from '@mui/icons-material/Title';
 import MainToolbar from '../Toolbar/MainToolbar';
 import type { CanvasTool } from '../Toolbar/MainToolbar';
+import GlobalSnackbar from './GlobalSnackbar';
 
 const drawerWidth = 320;
 
@@ -225,6 +226,8 @@ const AppLayout: React.FC = () => {
 
       {/* StatusBar at the bottom */}
       <StatusBar />
+      {/* Global Snackbar for notifications */}
+      <GlobalSnackbar />
     </Box>
   );
 };
