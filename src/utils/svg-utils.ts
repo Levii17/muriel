@@ -16,53 +16,13 @@ const getFabric = async (): Promise<any> => {
  * @returns Promise that resolves to an array of Fabric.js objects
  */
 export const parseSVGToFabric = async (svgString: string): Promise<fabric.Object[]> => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const fabric = await getFabric();
-      
-      // Create a temporary DOM element to parse SVG
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = svgString;
-      const svgElement = tempDiv.querySelector('svg');
-      
-      if (!svgElement) {
-        reject(new Error('Invalid SVG: No SVG element found'));
-        return;
-      }
-
-      // Use Fabric.js to parse the SVG element
-      fabric.loadSVGFromElement(svgElement, (objects: fabric.Object[], options: any) => {
-        if (!objects || objects.length === 0) {
-          reject(new Error('Failed to parse SVG: No objects created'));
-          return;
-        }
-
-        // Process the objects to ensure they have proper styling
-        const processedObjects = objects.map(obj => {
-          // Ensure stroke color is black for electrical symbols
-          if (obj.stroke === undefined || obj.stroke === '') {
-            obj.set('stroke', '#000000');
-          }
-          
-          // Ensure stroke width is appropriate
-          if (obj.strokeWidth === undefined || obj.strokeWidth < 1) {
-            obj.set('strokeWidth', 2);
-          }
-          
-          // Ensure fill is white for filled elements
-          if (obj.fill === undefined || obj.fill === '') {
-            obj.set('fill', '#FFFFFF');
-          }
-          
-          return obj;
-        });
-
-        resolve(processedObjects);
-      });
-    } catch (error) {
-      reject(error);
-    }
-  });
+  const fabric = await getFabric();
+  // Await the promise-based API (Fabric.js v5+)
+  const result = await fabric.loadSVGFromString(svgString);
+  if (!result.objects || result.objects.length === 0) {
+    throw new Error('Failed to parse SVG: No objects created');
+  }
+  return result.objects;
 };
 
 /**
@@ -95,10 +55,7 @@ export const createSymbolGroup = async (
     dataId: options.dataId,
     originX: 'center',
     originY: 'center',
-    // Ensure the group maintains proper styling
-    stroke: '#000000',
-    strokeWidth: 1,
-    fill: 'transparent',
+    // Do NOT override any visual styles here.
   });
 };
 

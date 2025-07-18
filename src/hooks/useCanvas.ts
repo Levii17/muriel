@@ -425,20 +425,33 @@ export function useCanvas() {
             try {
               const svgObjects = await parseSVGToFabric(symbol.svg);
               if (svgObjects && svgObjects.length > 0) {
-                const group = await createSymbolGroup(svgObjects, {
-                  left: element.position.x - (element.width || symbol.dimensions.width) / 2,
-                  top: element.position.y - (element.height || symbol.dimensions.height) / 2,
+                let objToAdd;
+                // If the SVG parser returns a single group, use it directly
+                if (svgObjects.length === 1 && svgObjects[0].type === 'group') {
+                  objToAdd = svgObjects[0];
+                } else if (svgObjects.length === 1) {
+                  objToAdd = svgObjects[0];
+                } else {
+                  const fabric = await import('fabric');
+                  // Cast svgObjects to the correct type for Fabric.Group
+                  objToAdd = new fabric.Group(svgObjects as any, {});
+                }
+                // Set only position and metadata, not width/height
+                objToAdd.set({
+                  left: element.position.x,
+                  top: element.position.y,
                   angle: element.rotation,
-                  width: element.width || symbol.dimensions.width,
-                  height: element.height || symbol.dimensions.height,
-                  dataId: element.id,
+                  data: { id: element.id }, // Use 'data' for custom metadata
+                  originX: 'left',
+                  originY: 'top',
                 });
-                symbolObjects.push(group);
-                fabricInstance.add(group);
+                symbolObjects.push(objToAdd);
+                fabricInstance.add(objToAdd);
               } else {
                 throw new Error('No objects created from SVG');
               }
             } catch (error) {
+              console.error('SVG parse error for symbol', symbol.id, error, symbol.svg);
               const fallbackObject = await createFallbackShape(symbol, {
                 left: element.position.x,
                 top: element.position.y,
