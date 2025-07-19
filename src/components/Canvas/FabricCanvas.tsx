@@ -1,7 +1,11 @@
 import React from 'react';
 import { useCanvas } from '../../hooks/useCanvas';
 
-const FabricCanvas: React.FC = () => {
+interface FabricCanvasProps {
+  selectedTool: 'select' | 'hand' | 'text';
+}
+
+const FabricCanvas: React.FC<FabricCanvasProps> = ({ selectedTool }) => {
   const {
     containerRef,
     canvasRef,
@@ -13,7 +17,8 @@ const FabricCanvas: React.FC = () => {
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
-  } = useCanvas();
+    handleCanvasClick,
+  } = useCanvas(selectedTool);
 
   return (
     <div
@@ -31,6 +36,7 @@ const FabricCanvas: React.FC = () => {
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
+      onClick={handleCanvasClick}
     >
       <canvas
         ref={canvasRef}

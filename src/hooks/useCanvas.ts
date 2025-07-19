@@ -14,7 +14,7 @@ const snapToGrid = (x: number, y: number) => ({
   y: Math.round(y / GRID_SIZE) * GRID_SIZE,
 });
 
-export function useCanvas() {
+export function useCanvas(selectedTool?: 'select' | 'hand' | 'text') {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const fabricRef = useRef<any>(null);
@@ -191,6 +191,34 @@ export function useCanvas() {
 
   const handleDragLeave = () => {
     setGhostPos(null);
+  };
+
+  // Add text tool support
+  const handleCanvasClick = async (e: React.MouseEvent<HTMLDivElement>) => {
+    if (selectedTool !== 'text' || !fabricRef.current || !canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left - viewport.pan.x) / viewport.zoom;
+    const y = (e.clientY - rect.top - viewport.pan.y) / viewport.zoom;
+    const fabric = await import('fabric');
+    const text = new fabric.Textbox('Text', {
+      left: x,
+      top: y,
+      fontSize: 18,
+      fill: '#000',
+      fontFamily: 'Arial',
+      editable: true,
+      width: 120,
+      backgroundColor: '#fff',
+      borderColor: '#1976d2',
+      cornerColor: '#1976d2',
+      cornerSize: 8,
+      padding: 4,
+    });
+    fabricRef.current.add(text);
+    fabricRef.current.setActiveObject(text);
+    fabricRef.current.renderAll();
+    // Optionally, focus editing mode
+    setTimeout(() => text.enterEditing && text.enterEditing(), 100);
   };
 
   // Fabric.js initialization and rendering
@@ -524,5 +552,6 @@ export function useCanvas() {
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
+    handleCanvasClick,
   };
 }

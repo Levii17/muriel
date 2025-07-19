@@ -19,7 +19,7 @@ import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import BrushIcon from '@mui/icons-material/Brush';
 import Chip from '@mui/material/Chip';
 
-export type CanvasTool = 'select' | 'hand';
+export type CanvasTool = 'select' | 'hand' | 'text';
 
 interface MainToolbarProps {
   selectedTool: CanvasTool;
@@ -54,7 +54,7 @@ const MainToolbar: React.FC<MainToolbarProps> = ({
       <Tooltip title="Select Tool"><IconButton aria-label="Select Tool" color={selectedTool === 'select' ? 'primary' : 'default'} onClick={() => onSelectTool('select')} sx={selectedTool === 'select' ? { boxShadow: 3, border: '2px solid #1976d2', bgcolor: '#f5faff' } : {}}><MouseIcon /></IconButton></Tooltip>
       <Tooltip title="Hand/Move Tool"><IconButton aria-label="Hand/Move Tool" color={selectedTool === 'hand' ? 'primary' : 'default'} onClick={() => onSelectTool('hand')} sx={selectedTool === 'hand' ? { boxShadow: 3, border: '2px solid #1976d2', bgcolor: '#f5faff' } : {}}><PanToolAltIcon /></IconButton></Tooltip>
       <Tooltip title="Wire Tool"><IconButton aria-label="Wire Tool" color="default"><ShowChartIcon /></IconButton></Tooltip>
-      <Tooltip title="Text Tool"><IconButton aria-label="Text Tool" color="default"><TextFieldsIcon /></IconButton></Tooltip>
+      <Tooltip title="Text Tool"><IconButton aria-label="Text Tool" color={selectedTool === 'text' ? 'primary' : 'default'} onClick={() => onSelectTool('text')} sx={selectedTool === 'text' ? { boxShadow: 3, border: '2px solid #1976d2', bgcolor: '#f5faff' } : {}}><TextFieldsIcon /></IconButton></Tooltip>
       <Tooltip title="Delete"><IconButton aria-label="Delete" onClick={onDelete}><DeleteIcon /></IconButton></Tooltip>
       <Tooltip title="Undo"><IconButton aria-label="Undo" onClick={onUndo}><UndoIcon /></IconButton></Tooltip>
       <Tooltip title="Redo"><IconButton aria-label="Redo" onClick={onRedo}><RedoIcon /></IconButton></Tooltip>

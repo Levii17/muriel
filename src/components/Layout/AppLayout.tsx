@@ -193,7 +193,7 @@ const AppLayout: React.FC = () => {
               p: 0,
             }}
           >
-            <FabricCanvas />
+            <FabricCanvas selectedTool={selectedTool} />
           </Paper>
         </Box>
       </Box>
