@@ -9,7 +9,7 @@ import PropertyPanel from '../Toolbar/PropertyPanel';
 import StatusBar from './StatusBar';
 import { useAtom } from 'jotai';
 import HeaderBar from './HeaderBar';
-import { canvasViewportAtom } from '../../stores/canvasStore';
+import { canvasViewportAtom, canvasElementsAtom, selectedElementsAtom, showMajorGridAtom, showMinorGridAtom, canvasHistoryAtom, canvasFutureAtom } from '../../stores/canvasStore';
 import Paper from '@mui/material/Paper';
 import Toolbar from '@mui/material/Toolbar';
 import Accordion from '@mui/material/Accordion';
@@ -21,6 +21,8 @@ import TitleIcon from '@mui/icons-material/Title';
 import MainToolbar from '../Toolbar/MainToolbar';
 import type { CanvasTool } from '../Toolbar/MainToolbar';
 import GlobalSnackbar from './GlobalSnackbar';
+import jsPDF from 'jspdf';
+import { snackbarAtom } from '../../stores/appStore';
 
 const drawerWidth = 320;
 
@@ -97,10 +99,55 @@ const AppLayout: React.FC = () => {
   const [selectedTool, setSelectedTool] = React.useState<CanvasTool>('select');
   // Toolbar/canvas state
   const [viewport, setViewport] = useAtom(canvasViewportAtom);
-  // Stub handlers for now
-  const handleUndo = () => {};
-  const handleRedo = () => {};
-  const handleDelete = () => {};
+  const [elements, setElements] = useAtom(canvasElementsAtom);
+  const [selected, setSelected] = useAtom(selectedElementsAtom);
+  const [showMajorGrid, setShowMajorGrid] = useAtom(showMajorGridAtom);
+  const [showMinorGrid, setShowMinorGrid] = useAtom(showMinorGridAtom);
+  const [, setHistory] = useAtom(canvasHistoryAtom);
+  const [, setFuture] = useAtom(canvasFutureAtom);
+  const [, setSnackbar] = useAtom(snackbarAtom);
+  // Delete handler
+  const handleDelete = () => {
+    if (selected.length === 0) return;
+    setElements(prev => prev.filter(el => !selected.includes(el.id)));
+    setSelected([]);
+  };
+  const isHistoryAction = React.useRef(false);
+  // Track changes to elements for undo/redo
+  React.useEffect(() => {
+    if (isHistoryAction.current) {
+      isHistoryAction.current = false;
+      return;
+    }
+    setHistory(prev => {
+      if (prev.length === 0 || prev[prev.length - 1] !== elements) {
+        return [...prev, elements];
+      }
+      return prev;
+    });
+    setFuture([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [elements]);
+
+  const handleUndo = () => {
+    setHistory(prev => {
+      if (prev.length <= 1) return prev;
+      isHistoryAction.current = true;
+      setFuture(f => [prev[prev.length - 1], ...f]);
+      setElements(prev[prev.length - 2]);
+      return prev.slice(0, -1);
+    });
+  };
+
+  const handleRedo = () => {
+    setFuture(f => {
+      if (f.length === 0) return f;
+      isHistoryAction.current = true;
+      setHistory(h => [...h, f[0]]);
+      setElements(f[0]);
+      return f.slice(1);
+    });
+  };
   // Zoom handlers
   const handleZoomIn = () => {
     setViewport(v => {
@@ -116,6 +163,47 @@ const AppLayout: React.FC = () => {
   };
   const handleResetView = () => {
     setViewport(v => ({ ...v, zoom: 1, pan: { x: 0, y: 0 } }));
+  };
+  const fabricCanvasRef = React.useRef<any>(null);
+
+  // Export handlers
+  const handleExportSVG = () => {
+    const fabricInstance = fabricCanvasRef.current;
+    if (!fabricInstance) return;
+    const svg = fabricInstance.toSVG();
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'diagram.svg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setSnackbar({ open: true, message: 'Exported as SVG!', severity: 'success' });
+  };
+
+  const handleExportPNG = () => {
+    const fabricInstance = fabricCanvasRef.current;
+    if (!fabricInstance) return;
+    const dataUrl = fabricInstance.toDataURL({ format: 'png' });
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = 'diagram.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setSnackbar({ open: true, message: 'Exported as PNG!', severity: 'success' });
+  };
+
+  const handleExportPDF = () => {
+    const fabricInstance = fabricCanvasRef.current;
+    if (!fabricInstance) return;
+    const dataUrl = fabricInstance.toDataURL({ format: 'png' });
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [fabricInstance.width, fabricInstance.height] });
+    pdf.addImage(dataUrl, 'PNG', 0, 0, fabricInstance.width, fabricInstance.height);
+    pdf.save('diagram.pdf');
+    setSnackbar({ open: true, message: 'Exported as PDF!', severity: 'success' });
   };
   return (
     <Box sx={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
@@ -175,6 +263,13 @@ const AppLayout: React.FC = () => {
             zoomLevel={viewport.zoom}
             minZoom={MIN_ZOOM}
             maxZoom={MAX_ZOOM}
+            showMajorGrid={showMajorGrid}
+            showMinorGrid={showMinorGrid}
+            onToggleMajorGrid={() => setShowMajorGrid(v => !v)}
+            onToggleMinorGrid={() => setShowMinorGrid(v => !v)}
+            onExportSVG={handleExportSVG}
+            onExportPNG={handleExportPNG}
+            onExportPDF={handleExportPDF}
           />
         {/* Canvas area centered */}
         <Box sx={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
@@ -193,7 +288,7 @@ const AppLayout: React.FC = () => {
               p: 0,
             }}
           >
-            <FabricCanvas selectedTool={selectedTool} />
+            <FabricCanvas ref={fabricCanvasRef} selectedTool={selectedTool} />
           </Paper>
         </Box>
       </Box>

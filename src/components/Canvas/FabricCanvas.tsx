@@ -1,11 +1,12 @@
-import React from 'react';
+import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { useCanvas } from '../../hooks/useCanvas';
 
 interface FabricCanvasProps {
   selectedTool: 'select' | 'hand' | 'text';
 }
 
-const FabricCanvas: React.FC<FabricCanvasProps> = ({ selectedTool }) => {
+const FabricCanvas = forwardRef<any, FabricCanvasProps>(({ selectedTool }, ref) => {
+  const fabricInstanceRef = useRef<any>(null);
   const {
     containerRef,
     canvasRef,
@@ -18,7 +19,8 @@ const FabricCanvas: React.FC<FabricCanvasProps> = ({ selectedTool }) => {
     handleMouseMove,
     handleMouseUp,
     handleCanvasClick,
-  } = useCanvas(selectedTool);
+  } = useCanvas(selectedTool, fabricInstanceRef);
+  useImperativeHandle(ref, () => fabricInstanceRef.current, []);
 
   return (
     <div
@@ -74,6 +76,6 @@ const FabricCanvas: React.FC<FabricCanvasProps> = ({ selectedTool }) => {
       {false && <div style={{ color: 'red' }}>Canvas or Fabric.js failed to load</div>}
     </div>
   );
-};
+});
 
 export default FabricCanvas; 

@@ -1,9 +1,9 @@
 import { useRef, useEffect, useState } from 'react';
 import { useAtom } from 'jotai';
-import { canvasElementsAtom, selectedElementsAtom, canvasViewportAtom } from '../stores/canvasStore';
+import { canvasElementsAtom, selectedElementsAtom, canvasViewportAtom, showMajorGridAtom, showMinorGridAtom } from '../stores/canvasStore';
 import { symbolLibraryAtom, draggedSymbolAtom } from '../stores/symbolStore';
 import { titleBlockAtom } from '../stores/titleBlockStore';
-import { parseSVGToFabric, createSymbolGroup, createFallbackShape } from '../utils/svg-utils';
+import { parseSVGToFabric, createFallbackShape } from '../utils/svg-utils';
 import type { ElectricalSymbol, CanvasElement } from '../types';
 
 const GRID_SIZE = 10;
@@ -14,7 +14,7 @@ const snapToGrid = (x: number, y: number) => ({
   y: Math.round(y / GRID_SIZE) * GRID_SIZE,
 });
 
-export function useCanvas(selectedTool?: 'select' | 'hand' | 'text') {
+export function useCanvas(selectedTool?: 'select' | 'hand' | 'text', fabricInstanceRef?: React.MutableRefObject<any | null>) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const fabricRef = useRef<any>(null);
@@ -26,6 +26,8 @@ export function useCanvas(selectedTool?: 'select' | 'hand' | 'text') {
   const [titleBlock] = useAtom(titleBlockAtom);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const [ghostPos, setGhostPos] = useState<{ x: number; y: number } | null>(null);
+  const [showMajorGrid] = useAtom(showMajorGridAtom);
+  const [showMinorGrid] = useAtom(showMinorGridAtom);
 
   // Responsive container size
   useEffect(() => {
@@ -178,12 +180,14 @@ export function useCanvas(selectedTool?: 'select' | 'hand' | 'text') {
       const symbol: ElectricalSymbol = JSON.parse(data);
       const pos = getPointerPosition(e);
       const snapped = snapToGrid(pos.x, pos.y);
+      // Find the symbol definition in the library
+      const symbolDef = symbolLibrary.find(s => s.id === symbol.id);
       const newElement: CanvasElement = {
         id: `${symbol.id}-${Date.now()}`,
         symbolId: symbol.id,
         position: snapped,
         rotation: 0,
-        properties: {},
+        properties: symbolDef ? { ...symbolDef.properties } : {},
       };
       setElements((prev) => [...prev, newElement]);
     }
@@ -221,10 +225,15 @@ export function useCanvas(selectedTool?: 'select' | 'hand' | 'text') {
     setTimeout(() => text.enterEditing && text.enterEditing(), 100);
   };
 
-  // Fabric.js initialization and rendering
+  // Store refs to Fabric.Text objects for title block fields
+  const titleBlockTextRefs = useRef<{ [key: string]: any }>({});
+
+  // Store refs to Fabric objects for each symbol element
+  const symbolFabricRefs = useRef<{ [id: string]: any }>({});
+
+  // Fabric.js initialization and rendering (grid, title block, etc.)
   useEffect(() => {
     let fabricInstance: any;
-    let symbolObjects: any[] = [];
     import('fabric').then((mod) => {
       const fabric = mod;
       if (fabricRef.current) {
@@ -240,12 +249,15 @@ export function useCanvas(selectedTool?: 'select' | 'hand' | 'text') {
           preserveObjectStacking: true,
         });
         fabricRef.current = fabricInstance;
+        if (fabricInstanceRef) fabricInstanceRef.current = fabricInstance;
+        // Set initial viewport transform
         fabricInstance.setViewportTransform([
           viewport.zoom, 0, 0, viewport.zoom, viewport.pan.x, viewport.pan.y
         ]);
         // Draw grid
         for (let x = 0; x <= containerSize.width; x += GRID_SIZE) {
           const isMajor = x % MAJOR_GRID_SIZE === 0;
+          if ((isMajor && showMajorGrid) || (!isMajor && showMinorGrid)) {
           const px = Math.round(x) + 0.5;
           const line = new fabric.Line([px, 0, px, containerSize.height], {
             stroke: isMajor ? '#bdbdbd' : '#e0e0e0',
@@ -255,9 +267,11 @@ export function useCanvas(selectedTool?: 'select' | 'hand' | 'text') {
             excludeFromExport: true,
           });
           fabricInstance.add(line);
+          }
         }
         for (let y = 0; y <= containerSize.height; y += GRID_SIZE) {
           const isMajor = y % MAJOR_GRID_SIZE === 0;
+          if ((isMajor && showMajorGrid) || (!isMajor && showMinorGrid)) {
           const py = Math.round(y) + 0.5;
           const line = new fabric.Line([0, py, containerSize.width, py], {
             stroke: isMajor ? '#bdbdbd' : '#e0e0e0',
@@ -267,6 +281,7 @@ export function useCanvas(selectedTool?: 'select' | 'hand' | 'text') {
             excludeFromExport: true,
           });
           fabricInstance.add(line);
+          }
         }
         // Border and title block
         const outerRect = new fabric.Rect({
@@ -365,75 +380,33 @@ export function useCanvas(selectedTool?: 'select' | 'hand' | 'text') {
             }));
           }
         }
-        // Text fields
-        fabricInstance.add(new fabric.Text(titleBlock.company || 'Organization', {
-          left: x + COL_X[1] + 8,
-          top: y + 8,
+        // Title block text fields (store refs)
+        const tbFields = [
+          { key: 'company', value: titleBlock.company || 'Organization', left: x + COL_X[1] + 8, top: y + 8, opts: {} },
+          { key: 'project', value: titleBlock.project || 'Project Name', left: x + COL_X[2] + 8, top: y + 8, opts: {} },
+          { key: 'date', value: titleBlock.date || '7/15/2025', left: x + COL_X[3] + COL_WIDTHS[3] - 8, top: y + 8, opts: { originX: 'right' as 'right' } },
+          { key: 'drawingTitle', value: titleBlock.drawingTitle || 'Drawing Title(s)', left: x + COL_X[2] + COL_WIDTHS[2] / 2, top: y + ROW_HEIGHT + ROW_HEIGHT / 2 + 16, opts: { originX: 'center' as 'center', originY: 'center' as 'center' } },
+          { key: 'designer', value: titleBlock.designer || 'Name', left: x + COL_X[1] + 8, top: y + ROW_HEIGHT + 8, opts: {} },
+          { key: 'details', value: titleBlock.details || 'Details', left: x + COL_X[1] + 8, top: y + 2 * ROW_HEIGHT + 8, opts: {} },
+          { key: 'scale', value: titleBlock.scale || '1:1', left: x + COL_X[3] + COL_WIDTHS[3] - 8, top: y + ROW_HEIGHT + 8, opts: { originX: 'right' as 'right' } },
+        ];
+        titleBlockTextRefs.current = {};
+        tbFields.forEach(field => {
+          const textObj = new fabric.Text(field.value, {
+            left: field.left,
+            top: field.top,
           fontSize: 13,
           fontWeight: 'bold',
           fill: '#222',
           selectable: false,
           evented: false,
-        }));
-        fabricInstance.add(new fabric.Text(titleBlock.project || 'Project Name', {
-          left: x + COL_X[2] + 8,
-          top: y + 8,
-          fontSize: 13,
-          fontWeight: 'bold',
-          fill: '#222',
-          selectable: false,
-          evented: false,
-        }));
-        fabricInstance.add(new fabric.Text(titleBlock.date || '7/15/2025', {
-          left: x + COL_X[3] + COL_WIDTHS[3] - 8,
-          top: y + 8,
-          fontSize: 13,
-          fontWeight: 'bold',
-          fill: '#222',
-          selectable: false,
-          evented: false,
-          originX: 'right',
-        }));
-        fabricInstance.add(new fabric.Text(titleBlock.drawingTitle || 'Drawing Title(s)', {
-          left: x + COL_X[2] + COL_WIDTHS[2] / 2,
-          top: y + ROW_HEIGHT + ROW_HEIGHT / 2 + 16,
-          fontSize: 13,
-          fontWeight: 'bold',
-          fill: '#222',
-          selectable: false,
-          evented: false,
-          originX: 'center',
-          originY: 'center',
-        }));
-        fabricInstance.add(new fabric.Text(titleBlock.designer || 'Name', {
-          left: x + COL_X[1] + 8,
-          top: y + ROW_HEIGHT + 8,
-          fontSize: 13,
-          fontWeight: 'bold',
-          fill: '#222',
-          selectable: false,
-          evented: false,
-        }));
-        fabricInstance.add(new fabric.Text(titleBlock.details || 'Details', {
-          left: x + COL_X[1] + 8,
-          top: y + 2 * ROW_HEIGHT + 8,
-          fontSize: 13,
-          fontWeight: 'bold',
-          fill: '#222',
-          selectable: false,
-          evented: false,
-        }));
-        fabricInstance.add(new fabric.Text(titleBlock.scale || '1:1', {
-          left: x + COL_X[3] + COL_WIDTHS[3] - 8,
-          top: y + ROW_HEIGHT + 8,
-          fontSize: 13,
-          fontWeight: 'bold',
-          fill: '#222',
-          selectable: false,
-          evented: false,
-          originX: 'right',
-        }));
-        fabricInstance.add(new fabric.Text('1 / 1', {
+            ...field.opts,
+          });
+          fabricInstance.add(textObj);
+          titleBlockTextRefs.current[field.key] = textObj;
+        });
+        // Page count (static for now)
+        const pageCountObj = new fabric.Text('1 / 1', {
           left: x + COL_X[3] + COL_WIDTHS[3] - 8,
           top: y + 2 * ROW_HEIGHT + 8,
           fontSize: 13,
@@ -442,71 +415,118 @@ export function useCanvas(selectedTool?: 'select' | 'hand' | 'text') {
           selectable: false,
           evented: false,
           originX: 'right',
-        }));
-        // Symbol rendering
-        symbolObjects.forEach(obj => fabricInstance.remove(obj));
-        symbolObjects = [];
-        const renderSymbols = async () => {
-          for (const element of elements) {
-            const symbol = symbolLibrary.find(s => s.id === element.symbolId);
-            if (!symbol) continue;
-            try {
-              const svgObjects = await parseSVGToFabric(symbol.svg);
-              if (svgObjects && svgObjects.length > 0) {
-                let objToAdd;
-                // If the SVG parser returns a single group, use it directly
-                if (svgObjects.length === 1 && svgObjects[0].type === 'group') {
-                  objToAdd = svgObjects[0];
-                } else if (svgObjects.length === 1) {
-                  objToAdd = svgObjects[0];
-                } else {
-                  const fabric = await import('fabric');
-                  // Cast svgObjects to the correct type for Fabric.Group
-                  objToAdd = new fabric.Group(svgObjects as any, {});
-                }
-                // Set only position and metadata, not width/height
-                objToAdd.set({
-                  left: element.position.x,
-                  top: element.position.y,
-                  angle: element.rotation,
-                  data: { id: element.id }, // Use 'data' for custom metadata
-                  originX: 'left',
-                  originY: 'top',
-                });
-                symbolObjects.push(objToAdd);
-                fabricInstance.add(objToAdd);
-              } else {
-                throw new Error('No objects created from SVG');
-              }
-            } catch (error) {
-              console.error('SVG parse error for symbol', symbol.id, error, symbol.svg);
-              const fallbackObject = await createFallbackShape(symbol, {
-                left: element.position.x,
-                top: element.position.y,
-                angle: element.rotation,
-                dataId: element.id,
-              });
-              symbolObjects.push(fallbackObject);
-              fabricInstance.add(fallbackObject);
-            }
-          }
-          fabricInstance.renderAll();
-        };
-        renderSymbols().catch(() => {});
+        });
+        fabricInstance.add(pageCountObj);
+        // Clear symbol refs
+        symbolFabricRefs.current = {};
       }
     });
     return () => {
-      if (fabricRef.current && symbolObjects.length > 0) {
-        symbolObjects.forEach(obj => {
-          try {
-            fabricRef.current.remove(obj);
-          } catch {}
+      if (fabricRef.current) {
+        Object.values(symbolFabricRefs.current).forEach(obj => {
+          try { fabricRef.current.remove(obj); } catch {}
         });
       }
       fabricRef.current?.dispose();
       fabricRef.current = null;
     };
-  }, [elements, symbolLibrary, viewport, selected, setElements, containerSize, draggedSymbol, ghostPos, titleBlock]);
+  }, [symbolLibrary, selected, setElements, containerSize, draggedSymbol, ghostPos, showMajorGrid, showMinorGrid]); // REMOVE elements from deps
+
+  // Incremental symbol placement and updates
+  useEffect(() => {
+    if (!fabricRef.current) return;
+    import('fabric').then(async (mod) => {
+      const fabric = mod;
+      const canvas = fabricRef.current;
+      const currentIds = new Set(Object.keys(symbolFabricRefs.current));
+      const newIds = new Set(elements.map(el => el.id));
+      // Remove deleted symbols
+      for (const id of currentIds) {
+        if (!newIds.has(id)) {
+          canvas.remove(symbolFabricRefs.current[id]);
+          delete symbolFabricRefs.current[id];
+        }
+      }
+      // Add new symbols
+      for (const el of elements) {
+        if (!symbolFabricRefs.current[el.id]) {
+          const symbol = symbolLibrary.find(s => s.id === el.symbolId);
+            if (!symbol) continue;
+            try {
+              const svgObjects = await parseSVGToFabric(symbol.svg);
+            let objToAdd;
+              if (svgObjects && svgObjects.length > 0) {
+                if (svgObjects.length === 1 && svgObjects[0].type === 'group') {
+                  objToAdd = svgObjects[0];
+                } else if (svgObjects.length === 1) {
+                  objToAdd = svgObjects[0];
+                } else {
+                  objToAdd = new fabric.Group(svgObjects as any, {});
+                }
+                objToAdd.set({
+                  left: el.position.x,
+                  top: el.position.y,
+                  angle: el.rotation,
+                  data: { id: el.id },
+                  originX: 'left',
+                  originY: 'top',
+                  selectable: true,
+                });
+              symbolFabricRefs.current[el.id] = objToAdd;
+              canvas.add(objToAdd);
+              }
+            } catch (error) {
+            // fallback
+              const fallbackObject = await createFallbackShape(symbol, {
+              left: el.position.x,
+              top: el.position.y,
+              angle: el.rotation,
+              dataId: el.id,
+            });
+            fallbackObject.set({ selectable: true, data: { id: el.id } });
+            symbolFabricRefs.current[el.id] = fallbackObject;
+            canvas.add(fallbackObject);
+          }
+        } else {
+          // Update existing symbol position/rotation if changed
+          const obj = symbolFabricRefs.current[el.id];
+          if (obj) {
+            obj.set({
+              left: el.position.x,
+              top: el.position.y,
+              angle: el.rotation,
+            });
+          }
+        }
+      }
+      canvas.requestRenderAll && canvas.requestRenderAll();
+    });
+  }, [elements, symbolLibrary]);
+
+  // New effect: update title block text objects when titleBlock changes
+  useEffect(() => {
+    if (!fabricRef.current || !titleBlockTextRefs.current) return;
+    const fields = [
+      'company', 'project', 'date', 'drawingTitle', 'designer', 'details', 'scale'
+    ] as const;
+    fields.forEach(key => {
+      const obj = titleBlockTextRefs.current[key];
+      if (obj && typeof titleBlock[key] !== 'undefined') {
+        obj.set({ text: (titleBlock as any)[key] || '' });
+      }
+    });
+    fabricRef.current.requestRenderAll && fabricRef.current.requestRenderAll();
+  }, [titleBlock]);
+
+  // New effect: update viewport transform only when viewport changes
+  useEffect(() => {
+    if (fabricRef.current) {
+      fabricRef.current.setViewportTransform([
+        viewport.zoom, 0, 0, viewport.zoom, viewport.pan.x, viewport.pan.y
+      ]);
+      fabricRef.current.requestRenderAll && fabricRef.current.requestRenderAll();
+    }
+  }, [viewport]);
 
   // Wheel zoom
   useEffect(() => {

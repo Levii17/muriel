@@ -33,6 +33,13 @@ interface MainToolbarProps {
   zoomLevel?: number;
   minZoom?: number;
   maxZoom?: number;
+  showMajorGrid: boolean;
+  showMinorGrid: boolean;
+  onToggleMajorGrid: () => void;
+  onToggleMinorGrid: () => void;
+  onExportSVG: () => void;
+  onExportPNG: () => void;
+  onExportPDF: () => void;
 }
 
 const MainToolbar: React.FC<MainToolbarProps> = ({
@@ -47,6 +54,13 @@ const MainToolbar: React.FC<MainToolbarProps> = ({
   zoomLevel,
   minZoom,
   maxZoom,
+  showMajorGrid,
+  showMinorGrid,
+  onToggleMajorGrid,
+  onToggleMinorGrid,
+  onExportSVG,
+  onExportPNG,
+  onExportPDF,
 }) => {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', bgcolor: '#fff', px: 1, py: 0.5, boxShadow: 1 }}>
@@ -60,8 +74,8 @@ const MainToolbar: React.FC<MainToolbarProps> = ({
       <Tooltip title="Redo"><IconButton aria-label="Redo" onClick={onRedo}><RedoIcon /></IconButton></Tooltip>
       <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
       {/* Tool group 2: Grid toggles */}
-      <Tooltip title="Major Grid"><IconButton aria-label="Major Grid" color="primary"><GridOnIcon /></IconButton></Tooltip>
-      <Tooltip title="Minor Grid"><IconButton aria-label="Minor Grid" color="default"><GridViewIcon /></IconButton></Tooltip>
+      <Tooltip title="Major Grid"><IconButton aria-label="Major Grid" color={showMajorGrid ? 'primary' : 'default'} onClick={onToggleMajorGrid}><GridOnIcon /></IconButton></Tooltip>
+      <Tooltip title="Minor Grid"><IconButton aria-label="Minor Grid" color={showMinorGrid ? 'primary' : 'default'} onClick={onToggleMinorGrid}><GridViewIcon /></IconButton></Tooltip>
       <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
       {/* Tool group 3: Zoom */}
       <Tooltip title="Zoom Out"><span><IconButton aria-label="Zoom Out" size="small" onClick={onZoomOut} disabled={zoomLevel !== undefined && minZoom !== undefined && zoomLevel <= minZoom}><ZoomOutIcon /></IconButton></span></Tooltip>
@@ -80,9 +94,9 @@ const MainToolbar: React.FC<MainToolbarProps> = ({
       {/* Spacer to push export/extra tools right */}
       <Box sx={{ flexGrow: 1 }} />
       {/* Tool group 4: Export */}
-      <Tooltip title="Export PDF"><IconButton aria-label="Export PDF" color="default"><CloudDownloadIcon /></IconButton></Tooltip>
-      <Tooltip title="Export SVG"><IconButton aria-label="Export SVG" color="default"><CloudDownloadIcon /></IconButton></Tooltip>
-      <Tooltip title="Export PNG"><IconButton aria-label="Export PNG" color="default"><CloudDownloadIcon /></IconButton></Tooltip>
+      <Tooltip title="Export PDF"><IconButton aria-label="Export PDF" color="default" onClick={onExportPDF}><CloudDownloadIcon /></IconButton></Tooltip>
+      <Tooltip title="Export SVG"><IconButton aria-label="Export SVG" color="default" onClick={onExportSVG}><CloudDownloadIcon /></IconButton></Tooltip>
+      <Tooltip title="Export PNG"><IconButton aria-label="Export PNG" color="default" onClick={onExportPNG}><CloudDownloadIcon /></IconButton></Tooltip>
       <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
       {/* Tool group 5: Extra tool */}
       <Tooltip title="Extra Tool"><IconButton aria-label="Extra Tool" color="default"><BrushIcon /></IconButton></Tooltip>

@@ -1,5 +1,3 @@
-import type { Object, Group, Line, Rect, Circle } from 'fabric';
-
 let fabricModule: any = null;
 
 // Initialize Fabric.js module

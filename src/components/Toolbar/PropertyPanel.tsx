@@ -1,11 +1,13 @@
 import React from 'react';
 import { useAtom } from 'jotai';
 import { selectedElementsAtom, canvasElementsAtom } from '../../stores/canvasStore';
+import { symbolLibraryAtom } from '../../stores/symbolStore';
 import { Box, Typography, TextField, Divider } from '@mui/material';
 
 const PropertyPanel: React.FC = () => {
   const [selected] = useAtom(selectedElementsAtom);
   const [elements, setElements] = useAtom(canvasElementsAtom);
+  const [symbolLibrary] = useAtom(symbolLibraryAtom);
 
   if (!selected.length) {
     return (
@@ -20,6 +22,7 @@ const PropertyPanel: React.FC = () => {
   if (!element) {
     return null;
   }
+  const symbol = symbolLibrary.find(s => s.id === element.symbolId);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -30,7 +33,12 @@ const PropertyPanel: React.FC = () => {
 
   return (
     <Box p={3}>
-      <Typography variant="h6" gutterBottom>Properties</Typography>
+      <Typography variant="h6" gutterBottom>Component Properties</Typography>
+      {symbol && (
+        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+          {symbol.name}
+        </Typography>
+      )}
       <Divider sx={{ mb: 2 }} />
       {Object.keys(element.properties).length === 0 && (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
