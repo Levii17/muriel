@@ -486,7 +486,7 @@ export function useCanvas(selectedTool?: 'select' | 'hand' | 'text', fabricInsta
             fallbackObject.set({ selectable: true, data: { id: el.id } });
             symbolFabricRefs.current[el.id] = fallbackObject;
             canvas.add(fallbackObject);
-          }
+            }
         } else {
           // Update existing symbol position/rotation if changed
           const obj = symbolFabricRefs.current[el.id];
